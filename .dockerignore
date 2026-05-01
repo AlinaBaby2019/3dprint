@@ -1,0 +1,13 @@
+.git
+.next
+node_modules
+npm-debug.log
+.env
+.env.local
+.env.production
+.vercel
+*.tsbuildinfo
+supabase/.temp
+supabase_*.deb
+docs
+README.md

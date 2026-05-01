@@ -138,6 +138,30 @@ docker compose ps
 docker compose logs -f web
 ```
 
+On the current production server Docker is installed and verified. PM2 is still
+serving port `3000`; Docker can be tested safely on another port by setting:
+
+```text
+APP_PORT=3001
+```
+
+Then run:
+
+```bash
+docker compose --env-file .env.production up -d --build
+curl http://127.0.0.1:3001/api/health
+```
+
+Switching live traffic from PM2 to Docker should be done deliberately:
+
+```bash
+pm2 stop aarhus-3d-print
+APP_PORT=3000 docker compose --env-file .env.production up -d --build
+curl http://127.0.0.1:3000/api/health
+```
+
+Keep PM2 available as rollback until Docker has been stable for a while.
+
 ## 6. Reverse Proxy
 
 Use Cloudflare for DNS and point the test domain to this server.
