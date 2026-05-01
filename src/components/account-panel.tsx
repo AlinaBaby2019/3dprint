@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { LogOut, UserRound } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
@@ -16,8 +16,6 @@ type AccountCopy = {
 
 export function AccountPanel({ copy }: { copy: AccountCopy }) {
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -39,36 +37,65 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
     return () => data.subscription.unsubscribe();
   }, [supabase]);
 
-  async function signIn() {
-    if (!supabase) {
-      return;
+  function readCredentials(form: HTMLFormElement) {
+    const data = new FormData(form);
+    const email = String(data.get("email") ?? "").trim();
+    const password = String(data.get("password") ?? "");
+    const authAction = String(data.get("authAction") ?? "signIn");
+
+    if (!email || !password) {
+      setMessage("Enter email and password first.");
+      return null;
     }
 
-    setBusy(true);
-    setMessage(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    setMessage(error ? error.message : "Signed in.");
+    if (password.length < 6) {
+      setMessage("Password must be at least 6 characters.");
+      return null;
+    }
+
+    return { authAction, email, password };
   }
 
-  async function signUp() {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     if (!supabase) {
+      return;
+    }
+
+    const credentials = readCredentials(event.currentTarget);
+    if (!credentials) {
       return;
     }
 
     setBusy(true);
     setMessage(null);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          preferred_locale: "da"
+
+    if (credentials.authAction === "signUp") {
+      const { error } = await supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        options: {
+          data: {
+            preferred_locale: "da"
+          }
         }
-      }
+      });
+
+      setBusy(false);
+      setMessage(
+        error ? error.message : "Account created. Check your email if confirmation is enabled."
+      );
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: credentials.email,
+      password: credentials.password
     });
+
     setBusy(false);
-    setMessage(error ? error.message : "Account created. Check your email if confirmation is enabled.");
+    setMessage(error ? error.message : "Signed in.");
   }
 
   async function signOut() {
@@ -102,14 +129,14 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
             </button>
           </div>
         ) : (
-          <>
+          <form className="account-panel-form" onSubmit={handleSubmit}>
             <label className="field">
               <span>{copy.email}</span>
               <input
                 autoComplete="email"
-                onChange={(event) => setEmail(event.target.value)}
+                name="email"
+                required
                 type="email"
-                value={email}
               />
             </label>
             <label className="field">
@@ -117,20 +144,32 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
               <input
                 autoComplete="current-password"
                 minLength={6}
-                onChange={(event) => setPassword(event.target.value)}
+                name="password"
+                required
                 type="password"
-                value={password}
               />
             </label>
             <div className="upload-actions">
-              <button className="button secondary" disabled={busy} onClick={signUp} type="button">
+              <button
+                className="button secondary"
+                disabled={busy}
+                name="authAction"
+                type="submit"
+                value="signUp"
+              >
                 {copy.signUp}
               </button>
-              <button className="button primary" disabled={busy} onClick={signIn} type="button">
+              <button
+                className="button primary"
+                disabled={busy}
+                name="authAction"
+                type="submit"
+                value="signIn"
+              >
                 {copy.signIn}
               </button>
             </div>
-          </>
+          </form>
         )}
 
         {message && <p className="form-note">{message}</p>}

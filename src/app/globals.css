@@ -442,6 +442,11 @@ textarea {
   gap: 14px;
 }
 
+.account-panel-form {
+  display: grid;
+  gap: 14px;
+}
+
 .signed-in {
   align-items: center;
   display: grid;
