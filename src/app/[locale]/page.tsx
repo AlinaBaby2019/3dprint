@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Box, PackageCheck, Search, Upload } from "lucide-react";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
@@ -67,7 +68,33 @@ export default async function LocaleHome({ params }: PageProps) {
             </div>
           </div>
 
-          <section className="panel upload-panel" id="print">
+          <div className="hero-visual">
+            <Image
+              alt="3D printer producing a practical part"
+              className="hero-image"
+              height={850}
+              priority
+              src="/images/hero-3d-print.png"
+              width={1200}
+            />
+            <div className="hero-facts" aria-label="Service highlights">
+              <span>24-48h quote</span>
+              <span>Aarhus pickup</span>
+              <span>PLA · PETG · TPU</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="section print-section" id="print">
+          <div className="section-head">
+            <div>
+              <h2>{t.upload.title}</h2>
+              <p>{t.upload.description}</p>
+            </div>
+          </div>
+
+          <div className="print-layout">
+            <section className="panel upload-panel">
             <h2>{t.upload.title}</h2>
             <p>{t.upload.description}</p>
             <div className="dropzone">
@@ -115,7 +142,26 @@ export default async function LocaleHome({ params }: PageProps) {
               <span>{t.upload.estimate}</span>
               <strong>120-180 DKK</strong>
             </div>
-          </section>
+            </section>
+
+            <aside className="panel process-panel">
+              <div className="process-step">
+                <span>01</span>
+                <strong>Upload</strong>
+                <p>STL, 3MF, OBJ, STEP, images, or ZIP files.</p>
+              </div>
+              <div className="process-step">
+                <span>02</span>
+                <strong>Review</strong>
+                <p>Printability and final price are confirmed manually.</p>
+              </div>
+              <div className="process-step">
+                <span>03</span>
+                <strong>Print locally</strong>
+                <p>Pickup, local delivery, or parcel shipping from Aarhus.</p>
+              </div>
+            </aside>
+          </div>
         </section>
 
         <section className="section" id="products">
@@ -128,7 +174,14 @@ export default async function LocaleHome({ params }: PageProps) {
           <div className="product-grid">
             {products.map((product) => (
               <article className="product-card" key={product.name}>
-                <div className="product-art" style={{ background: product.image }} />
+                <div className="product-art">
+                  <Image
+                    alt={product.name}
+                    height={560}
+                    src={product.image}
+                    width={760}
+                  />
+                </div>
                 <div className="card-body">
                   <h3>{product.name}</h3>
                   <div className="meta">

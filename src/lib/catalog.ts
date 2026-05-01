@@ -4,28 +4,28 @@ export const products = [
     category: "Workspace",
     price: "89 DKK",
     leadTime: "1-2 days",
-    image: "linear-gradient(135deg, #d8e7e1, #f5f0e7)"
+    image: "/images/product-cable-dock.png"
   },
   {
     name: "Aarhus key tag",
     category: "Local gifts",
     price: "49 DKK",
     leadTime: "1 day",
-    image: "linear-gradient(135deg, #d7dfeb, #eef1f0)"
+    image: "/images/product-aarhus-keytag.png"
   },
   {
     name: "Modular desk tray",
     category: "Storage",
     price: "149 DKK",
     leadTime: "2-3 days",
-    image: "linear-gradient(135deg, #e2e5de, #ffffff)"
+    image: "/images/product-desk-tray.png"
   },
   {
     name: "Custom name tag",
     category: "Personalized",
     price: "79 DKK",
     leadTime: "1-2 days",
-    image: "linear-gradient(135deg, #ece7dc, #dbe8ea)"
+    image: "/images/product-name-tag.png"
   }
 ];
 

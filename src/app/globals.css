@@ -115,8 +115,8 @@ textarea {
 .hero {
   display: grid;
   gap: 42px;
-  grid-template-columns: minmax(0, 1.02fr) minmax(340px, 0.98fr);
-  padding: 56px 0 36px;
+  grid-template-columns: minmax(0, 0.92fr) minmax(380px, 1.08fr);
+  padding: 56px 0 28px;
 }
 
 .eyebrow {
@@ -185,7 +185,59 @@ textarea {
   padding: 20px;
 }
 
-.upload-panel {
+.hero-visual {
+  align-self: start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  min-height: 420px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-image {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.hero-facts {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(217, 222, 216, 0.9);
+  border-radius: 8px;
+  bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  left: 16px;
+  padding: 8px;
+  position: absolute;
+  right: 16px;
+}
+
+.hero-facts span {
+  background: #edf3ef;
+  border-radius: 7px;
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 10px;
+}
+
+.print-section {
+  padding-top: 24px;
+}
+
+.print-layout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+}
+
+.upload-panel,
+.process-panel {
   align-self: start;
 }
 
@@ -302,6 +354,15 @@ textarea {
 
 .product-art {
   aspect-ratio: 4 / 3;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.product-art img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
 }
 
 .card-body {
@@ -336,6 +397,40 @@ textarea {
   padding: 16px;
 }
 
+.process-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.process-step {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+}
+
+.process-step:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.process-step span {
+  color: var(--accent);
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.process-step strong {
+  display: block;
+  font-size: 18px;
+}
+
+.process-step p {
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 5px 0 0;
+}
+
 .status-box input {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -360,6 +455,10 @@ textarea {
   .hero {
     grid-template-columns: 1fr;
     padding-top: 28px;
+  }
+
+  .print-layout {
+    grid-template-columns: 1fr;
   }
 
   .product-grid,
