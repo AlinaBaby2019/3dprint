@@ -58,6 +58,9 @@ Build:
 npm run build
 ```
 
+The build script also copies `public` and `.next/static` into the standalone
+output so PM2 can serve images and static assets correctly.
+
 Start:
 
 ```bash
