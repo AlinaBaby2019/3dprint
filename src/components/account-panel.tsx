@@ -12,6 +12,10 @@ type AccountCopy = {
   signIn: string;
   signUp: string;
   signOut: string;
+  modeSignIn: string;
+  modeSignUp: string;
+  signUpHelp: string;
+  signInHelp: string;
 };
 
 export function AccountPanel({ copy }: { copy: AccountCopy }) {
@@ -19,6 +23,7 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [mode, setMode] = useState<"signIn" | "signUp">("signUp");
 
   useEffect(() => {
     if (!supabase) {
@@ -41,7 +46,7 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
     const data = new FormData(form);
     const email = String(data.get("email") ?? "").trim();
     const password = String(data.get("password") ?? "");
-    const authAction = String(data.get("authAction") ?? "signIn");
+    const authAction = mode;
 
     if (!email || !password) {
       setMessage("Enter email and password first.");
@@ -130,11 +135,33 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
           </div>
         ) : (
           <form className="account-panel-form" onSubmit={handleSubmit}>
+            <div className="auth-tabs" role="tablist" aria-label="Account action">
+              <button
+                aria-selected={mode === "signUp"}
+                className="auth-tab"
+                onClick={() => setMode("signUp")}
+                role="tab"
+                type="button"
+              >
+                {copy.modeSignUp}
+              </button>
+              <button
+                aria-selected={mode === "signIn"}
+                className="auth-tab"
+                onClick={() => setMode("signIn")}
+                role="tab"
+                type="button"
+              >
+                {copy.modeSignIn}
+              </button>
+            </div>
+            <p className="form-helper">{mode === "signUp" ? copy.signUpHelp : copy.signInHelp}</p>
             <label className="field">
               <span>{copy.email}</span>
               <input
                 autoComplete="email"
                 name="email"
+                placeholder="name@example.com"
                 required
                 type="email"
               />
@@ -142,31 +169,17 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
             <label className="field">
               <span>{copy.password}</span>
               <input
-                autoComplete="current-password"
+                autoComplete={mode === "signUp" ? "new-password" : "current-password"}
                 minLength={6}
                 name="password"
+                placeholder="At least 6 characters"
                 required
                 type="password"
               />
             </label>
             <div className="upload-actions">
-              <button
-                className="button secondary"
-                disabled={busy}
-                name="authAction"
-                type="submit"
-                value="signUp"
-              >
-                {copy.signUp}
-              </button>
-              <button
-                className="button primary"
-                disabled={busy}
-                name="authAction"
-                type="submit"
-                value="signIn"
-              >
-                {copy.signIn}
+              <button className="button primary wide" disabled={busy} type="submit">
+                {mode === "signUp" ? copy.signUp : copy.signIn}
               </button>
             </div>
           </form>

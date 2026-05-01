@@ -447,6 +447,41 @@ textarea {
   gap: 14px;
 }
 
+.auth-tabs {
+  background: var(--surface-muted);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+}
+
+.auth-tab {
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 40px;
+}
+
+.auth-tab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 6px 18px rgba(23, 33, 31, 0.08);
+}
+
+.form-helper {
+  color: var(--muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.button.wide {
+  width: 100%;
+}
+
 .signed-in {
   align-items: center;
   display: grid;
