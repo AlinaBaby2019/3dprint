@@ -430,6 +430,36 @@ textarea {
   padding: 12px 14px;
 }
 
+.account-layout {
+  display: grid;
+  gap: 42px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 0.7fr);
+  padding: 64px 0;
+}
+
+.account-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.signed-in {
+  align-items: center;
+  display: grid;
+  gap: 14px;
+}
+
+.signed-in span {
+  color: var(--muted);
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.signed-in strong {
+  display: block;
+  margin-top: 4px;
+}
+
 .section {
   padding: 42px 0;
 }
@@ -576,6 +606,10 @@ textarea {
   }
 
   .print-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .account-layout {
     grid-template-columns: 1fr;
   }
 

@@ -14,7 +14,8 @@ export const dictionary = {
       print: "3D print",
       products: "Produkter",
       orders: "Ordre",
-      materials: "Materialer"
+      materials: "Materialer",
+      account: "Konto"
     },
     hero: {
       eyebrow: "Aarhus lokal service",
@@ -49,6 +50,15 @@ export const dictionary = {
       title: "Tjek ordrestatus",
       placeholder: "Ordrenummer eller email",
       action: "Søg"
+    },
+    account: {
+      title: "Konto",
+      subtitle: "Log ind for at sende filer til vurdering og følge dine projekter.",
+      email: "Email",
+      password: "Adgangskode",
+      signIn: "Log ind",
+      signUp: "Opret konto",
+      signOut: "Log ud"
     }
   },
   en: {
@@ -56,7 +66,8 @@ export const dictionary = {
       print: "3D print",
       products: "Products",
       orders: "Orders",
-      materials: "Materials"
+      materials: "Materials",
+      account: "Account"
     },
     hero: {
       eyebrow: "Aarhus local service",
@@ -91,6 +102,15 @@ export const dictionary = {
       title: "Check order status",
       placeholder: "Order number or email",
       action: "Search"
+    },
+    account: {
+      title: "Account",
+      subtitle: "Sign in to send files for review and track your projects.",
+      email: "Email",
+      password: "Password",
+      signIn: "Sign in",
+      signUp: "Create account",
+      signOut: "Sign out"
     }
   },
   zh: {
@@ -98,7 +118,8 @@ export const dictionary = {
       print: "3D 打印",
       products: "商品",
       orders: "订单",
-      materials: "材料"
+      materials: "材料",
+      account: "账户"
     },
     hero: {
       eyebrow: "奥胡斯本地服务",
@@ -132,6 +153,15 @@ export const dictionary = {
       title: "查询订单状态",
       placeholder: "订单号或邮箱",
       action: "查询"
+    },
+    account: {
+      title: "账户",
+      subtitle: "登录后可以提交文件审核并查看项目进度。",
+      email: "邮箱",
+      password: "密码",
+      signIn: "登录",
+      signUp: "注册",
+      signOut: "退出"
     }
   }
 } as const;

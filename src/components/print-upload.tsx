@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, FileUp, RotateCcw, Send } from "lucide-react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
-import { isSupabaseConfigured } from "@/lib/supabase/browser";
+import { createBrowserSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/browser";
 
 type UploadCopy = {
   title: string;
@@ -91,6 +91,7 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
   const [quantity, setQuantity] = useState(1);
   const [delivery, setDelivery] = useState("Pickup");
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const estimate = useMemo(() => {
     const fileSizeMb = file ? file.size / 1024 / 1024 : 1;
@@ -241,7 +242,7 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
   const oversized =
     dimensions && (dimensions.x > 256 || dimensions.y > 256 || dimensions.z > 260);
 
-  const submitForReview = () => {
+  const submitForReview = async () => {
     if (!file) {
       setSubmitMessage("Choose a file first.");
       return;
@@ -254,7 +255,89 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
       return;
     }
 
-    setSubmitMessage("Supabase upload will be connected after the dedicated project is linked.");
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) {
+      setSubmitMessage("Supabase client is not available.");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitMessage(null);
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const user = userData.user;
+
+    if (userError || !user) {
+      setSubmitting(false);
+      setSubmitMessage("Sign in from the account page before sending files for review.");
+      return;
+    }
+
+    const materialId = material.toLowerCase();
+    const { data: project, error: projectError } = await supabase
+      .from("projects")
+      .insert({
+        user_id: user.id,
+        type: "print_existing_model",
+        status: "needs_review",
+        title: file.name,
+        selected_material: materialId,
+        selected_color: color,
+        selected_quality: quality,
+        quantity,
+        delivery_method: delivery,
+        estimate_low_dkk: estimate.low,
+        estimate_high_dkk: estimate.high,
+        metadata: {
+          dimensions,
+          originalFileName: file.name
+        }
+      })
+      .select("id")
+      .single();
+
+    if (projectError || !project) {
+      setSubmitting(false);
+      setSubmitMessage(projectError?.message ?? "Could not create project.");
+      return;
+    }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storagePath = `${user.id}/projects/${project.id}/uploads/${Date.now()}-${safeName}`;
+    const { error: uploadError } = await supabase.storage
+      .from("project-files")
+      .upload(storagePath, file, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false
+      });
+
+    if (uploadError) {
+      setSubmitting(false);
+      setSubmitMessage(uploadError.message);
+      return;
+    }
+
+    const { error: fileError } = await supabase.from("project_files").insert({
+      project_id: project.id,
+      user_id: user.id,
+      role: "original_upload",
+      storage_provider: "supabase",
+      bucket: "project-files",
+      path: storagePath,
+      original_name: file.name,
+      mime_type: file.type || "application/octet-stream",
+      size_bytes: file.size,
+      metadata: {
+        dimensions
+      }
+    });
+
+    setSubmitting(false);
+    setSubmitMessage(
+      fileError
+        ? fileError.message
+        : `Project submitted for review. Reference: ${project.id.slice(0, 8)}`
+    );
   };
 
   return (
@@ -381,7 +464,7 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
         </button>
         <button className="button primary" onClick={submitForReview} type="button">
           <Send size={18} />
-          {copy.submit}
+          {submitting ? "Sending..." : copy.submit}
         </button>
       </div>
 

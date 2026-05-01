@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Route } from "next";
 import { notFound } from "next/navigation";
 import { PackageCheck, Search, Upload } from "lucide-react";
 import { PrintUpload } from "@/components/print-upload";
@@ -38,6 +39,7 @@ export default async function LocaleHome({ params }: PageProps) {
             <a href="#products">{t.nav.products}</a>
             <a href="#materials">{t.nav.materials}</a>
             <a href="#orders">{t.nav.orders}</a>
+            <Link href={`/${locale}/account` as Route}>{t.nav.account}</Link>
             <span className="language-switch" aria-label="Language">
               {locales.map((item) => (
                 <Link
