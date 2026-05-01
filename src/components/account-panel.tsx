@@ -3,12 +3,14 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { LogOut, UserRound } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
+import type { Locale } from "@/lib/i18n";
 
 type AccountCopy = {
   title: string;
   subtitle: string;
   email: string;
   password: string;
+  confirmPassword: string;
   signIn: string;
   signUp: string;
   signOut: string;
@@ -16,14 +18,15 @@ type AccountCopy = {
   modeSignUp: string;
   signUpHelp: string;
   signInHelp: string;
+  passwordMismatch: string;
 };
 
-export function AccountPanel({ copy }: { copy: AccountCopy }) {
+export function AccountPanel({ copy, locale }: { copy: AccountCopy; locale: Locale }) {
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [mode, setMode] = useState<"signIn" | "signUp">("signUp");
+  const [mode, setMode] = useState<"signIn" | "signUp">("signIn");
 
   useEffect(() => {
     if (!supabase) {
@@ -46,6 +49,7 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
     const data = new FormData(form);
     const email = String(data.get("email") ?? "").trim();
     const password = String(data.get("password") ?? "");
+    const confirmPassword = String(data.get("confirmPassword") ?? "");
     const authAction = mode;
 
     if (!email || !password) {
@@ -55,6 +59,11 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
 
     if (password.length < 6) {
       setMessage("Password must be at least 6 characters.");
+      return null;
+    }
+
+    if (authAction === "signUp" && password !== confirmPassword) {
+      setMessage(copy.passwordMismatch);
       return null;
     }
 
@@ -81,8 +90,9 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
         email: credentials.email,
         password: credentials.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/${locale}/account`,
           data: {
-            preferred_locale: "da"
+            preferred_locale: locale
           }
         }
       });
@@ -100,7 +110,12 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
     });
 
     setBusy(false);
-    setMessage(error ? error.message : "Signed in.");
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    window.location.href = `/${locale}`;
   }
 
   async function signOut() {
@@ -137,15 +152,6 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
           <form className="account-panel-form" onSubmit={handleSubmit}>
             <div className="auth-tabs" role="tablist" aria-label="Account action">
               <button
-                aria-selected={mode === "signUp"}
-                className="auth-tab"
-                onClick={() => setMode("signUp")}
-                role="tab"
-                type="button"
-              >
-                {copy.modeSignUp}
-              </button>
-              <button
                 aria-selected={mode === "signIn"}
                 className="auth-tab"
                 onClick={() => setMode("signIn")}
@@ -153,6 +159,15 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
                 type="button"
               >
                 {copy.modeSignIn}
+              </button>
+              <button
+                aria-selected={mode === "signUp"}
+                className="auth-tab"
+                onClick={() => setMode("signUp")}
+                role="tab"
+                type="button"
+              >
+                {copy.modeSignUp}
               </button>
             </div>
             <p className="form-helper">{mode === "signUp" ? copy.signUpHelp : copy.signInHelp}</p>
@@ -177,6 +192,19 @@ export function AccountPanel({ copy }: { copy: AccountCopy }) {
                 type="password"
               />
             </label>
+            {mode === "signUp" && (
+              <label className="field">
+                <span>{copy.confirmPassword}</span>
+                <input
+                  autoComplete="new-password"
+                  minLength={6}
+                  name="confirmPassword"
+                  placeholder="Repeat password"
+                  required
+                  type="password"
+                />
+              </label>
+            )}
             <div className="upload-actions">
               <button className="button primary wide" disabled={busy} type="submit">
                 {mode === "signUp" ? copy.signUp : copy.signIn}

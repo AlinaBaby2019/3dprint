@@ -56,13 +56,15 @@ export const dictionary = {
       subtitle: "Log ind for at sende filer til vurdering og følge dine projekter.",
       email: "Email",
       password: "Adgangskode",
+      confirmPassword: "Gentag adgangskode",
       signIn: "Log ind",
       signUp: "Opret konto",
       signOut: "Log ud",
       modeSignIn: "Log ind",
       modeSignUp: "Opret konto",
       signUpHelp: "Udfyld email og adgangskode, og tryk Opret konto.",
-      signInHelp: "Har du allerede en konto, kan du logge ind her."
+      signInHelp: "Har du allerede en konto, kan du logge ind her.",
+      passwordMismatch: "Adgangskoderne er ikke ens."
     }
   },
   en: {
@@ -112,13 +114,15 @@ export const dictionary = {
       subtitle: "Sign in to send files for review and track your projects.",
       email: "Email",
       password: "Password",
+      confirmPassword: "Confirm password",
       signIn: "Sign in",
       signUp: "Create account",
       signOut: "Sign out",
       modeSignIn: "Sign in",
       modeSignUp: "Create account",
       signUpHelp: "Enter an email and password, then press Create account.",
-      signInHelp: "Already have an account? Sign in here."
+      signInHelp: "Already have an account? Sign in here.",
+      passwordMismatch: "Passwords do not match."
     }
   },
   zh: {
@@ -167,13 +171,15 @@ export const dictionary = {
       subtitle: "登录后可以提交文件审核并查看项目进度。",
       email: "邮箱",
       password: "密码",
+      confirmPassword: "确认密码",
       signIn: "登录",
       signUp: "注册",
       signOut: "退出",
       modeSignIn: "登录",
       modeSignUp: "注册",
       signUpHelp: "填写邮箱和密码，然后点击注册。",
-      signInHelp: "已有账户可以在这里登录。"
+      signInHelp: "已有账户可以在这里登录。",
+      passwordMismatch: "两次输入的密码不一致。"
     }
   }
 } as const;

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import type { Route } from "next";
 import { notFound } from "next/navigation";
+import { AccountNav } from "@/components/account-nav";
 import { AccountPanel } from "@/components/account-panel";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 
@@ -32,13 +32,11 @@ export default async function AccountPage({ params }: PageProps) {
           </Link>
           <nav className="nav" aria-label="Primary">
             <Link href={`/${locale}`}>{t.nav.print}</Link>
-            <Link href={`/${locale}/account` as Route} aria-current="page">
-              {t.nav.account}
-            </Link>
+            <AccountNav label={t.nav.account} locale={locale} />
           </nav>
         </header>
 
-        <AccountPanel copy={t.account} />
+        <AccountPanel copy={t.account} locale={locale} />
       </div>
     </main>
   );
