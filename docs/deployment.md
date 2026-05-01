@@ -73,7 +73,53 @@ Health check:
 curl http://127.0.0.1:3000/api/health
 ```
 
-## 4. Run With Docker
+## 4. Run With PM2
+
+PM2 is the recommended runtime for this VPS before Docker is installed. It keeps
+the Next.js standalone server running, restarts it after crashes, and can restore
+the process after a reboot.
+
+Install PM2:
+
+```bash
+npm install -g pm2
+```
+
+Build the app:
+
+```bash
+npm install
+npm run build
+```
+
+Start or reload the app:
+
+```bash
+pm2 startOrReload ecosystem.config.cjs --env production
+```
+
+Check status and logs:
+
+```bash
+pm2 status
+pm2 logs aarhus-3d-print
+```
+
+Persist the process list:
+
+```bash
+pm2 save
+```
+
+Enable startup after reboot:
+
+```bash
+pm2 startup
+```
+
+PM2 will print a system-specific command. Run that command once with sudo.
+
+## 5. Run With Docker
 
 Install Docker and Docker Compose on the server, then:
 
@@ -89,7 +135,7 @@ docker compose ps
 docker compose logs -f web
 ```
 
-## 5. Reverse Proxy
+## 6. Reverse Proxy
 
 Use Cloudflare for DNS and point the test domain to this server.
 
@@ -123,7 +169,7 @@ server {
 For production, enable HTTPS through Caddy automatic TLS, Nginx with Certbot, or
 Cloudflare Origin Certificates.
 
-## 6. DNS Checklist
+## 7. DNS Checklist
 
 In Cloudflare:
 
@@ -132,7 +178,7 @@ In Cloudflare:
 - Set SSL/TLS mode to `Full` or `Full (strict)` after HTTPS is configured
 - Keep `NEXT_PUBLIC_SITE_URL` aligned with the test domain
 
-## 7. Deployment Workflow
+## 8. Deployment Workflow
 
 Recommended manual workflow:
 
@@ -143,7 +189,15 @@ npm run build
 npm run start
 ```
 
-For a persistent Node process, use `systemd`, `pm2`, or Docker Compose.
+Recommended PM2 workflow:
+
+```bash
+git pull origin main
+npm install
+npm run build
+pm2 startOrReload ecosystem.config.cjs --env production
+pm2 save
+```
 
 Docker-based workflow:
 
@@ -152,7 +206,7 @@ git pull origin main
 docker compose up -d --build
 ```
 
-## 8. Current Health Endpoint
+## 9. Current Health Endpoint
 
 The MVP exposes:
 
