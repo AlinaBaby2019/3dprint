@@ -131,6 +131,10 @@ cp .env.production.example .env.production
 docker compose up -d --build
 ```
 
+`NEXT_PUBLIC_*` values are passed into Docker as build args. Next.js embeds
+these public values into the browser bundle during `next build`, so rebuilding is
+required after changing the Supabase URL or anon key.
+
 Check status:
 
 ```bash
