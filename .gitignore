@@ -8,3 +8,4 @@ out
 dist
 *.tsbuildinfo
 .env.production
+supabase_*.deb

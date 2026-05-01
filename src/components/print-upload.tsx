@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, FileUp, RotateCcw, Send } from "lucide-react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
+import { isSupabaseConfigured } from "@/lib/supabase/browser";
 
 type UploadCopy = {
   title: string;
@@ -89,6 +90,7 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
   const [quality, setQuality] = useState("Standard");
   const [quantity, setQuantity] = useState(1);
   const [delivery, setDelivery] = useState("Pickup");
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
   const estimate = useMemo(() => {
     const fileSizeMb = file ? file.size / 1024 / 1024 : 1;
@@ -239,6 +241,22 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
   const oversized =
     dimensions && (dimensions.x > 256 || dimensions.y > 256 || dimensions.z > 260);
 
+  const submitForReview = () => {
+    if (!file) {
+      setSubmitMessage("Choose a file first.");
+      return;
+    }
+
+    if (!isSupabaseConfigured()) {
+      setSubmitMessage(
+        "Supabase is not configured on this server yet. The form is ready, but remote project upload is disabled."
+      );
+      return;
+    }
+
+    setSubmitMessage("Supabase upload will be connected after the dedicated project is linked.");
+  };
+
   return (
     <section className="panel upload-panel">
       <h2>{copy.title}</h2>
@@ -361,11 +379,13 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
           <RotateCcw size={18} />
           Refresh preview
         </button>
-        <button className="button primary" type="button">
+        <button className="button primary" onClick={submitForReview} type="button">
           <Send size={18} />
           {copy.submit}
         </button>
       </div>
+
+      {submitMessage && <p className="form-note">{submitMessage}</p>}
     </section>
   );
 }

@@ -421,6 +421,15 @@ textarea {
   margin-top: 14px;
 }
 
+.form-note {
+  background: #f6f0df;
+  border: 1px solid #e0cfa8;
+  border-radius: 8px;
+  color: var(--warning);
+  margin: 12px 0 0;
+  padding: 12px 14px;
+}
+
 .section {
   padding: 42px 0;
 }
