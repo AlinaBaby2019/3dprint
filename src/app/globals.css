@@ -255,6 +255,31 @@ textarea {
   text-align: center;
 }
 
+.dropzone.interactive {
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.dropzone.interactive:hover {
+  background:
+    linear-gradient(135deg, rgba(47, 111, 98, 0.13), rgba(216, 222, 216, 0.42)),
+    var(--surface-muted);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.file-input {
+  clip: rect(0 0 0 0);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 .dropzone strong {
   display: block;
   font-size: 18px;
@@ -263,6 +288,78 @@ textarea {
 
 .dropzone span {
   color: var(--muted);
+}
+
+.preview-shell {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  margin-top: 14px;
+}
+
+.model-preview {
+  align-items: center;
+  background: #f2f4ef;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  height: 280px;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.model-preview canvas {
+  display: block;
+}
+
+.preview-empty,
+.preview-message {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 260px;
+  padding: 16px;
+  position: absolute;
+  text-align: center;
+}
+
+.preview-message {
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.file-facts {
+  display: grid;
+  gap: 10px;
+}
+
+.file-facts div {
+  background: var(--surface-muted);
+  border-radius: 8px;
+  min-height: 86px;
+  padding: 14px;
+}
+
+.file-facts span {
+  color: var(--muted);
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.file-facts strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.warning {
+  color: var(--warning);
 }
 
 .form-grid {
@@ -292,6 +389,10 @@ textarea {
   padding: 0 12px;
 }
 
+.field.full {
+  grid-column: 1 / -1;
+}
+
 .estimate {
   align-items: center;
   background: var(--surface-muted);
@@ -310,6 +411,14 @@ textarea {
 
 .estimate strong {
   font-size: 22px;
+}
+
+.upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .section {
@@ -473,6 +582,7 @@ textarea {
   }
 
   .form-grid,
+  .preview-shell,
   .product-grid,
   .material-grid,
   .status-box {

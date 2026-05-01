@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Box, PackageCheck, Search, Upload } from "lucide-react";
+import { PackageCheck, Search, Upload } from "lucide-react";
+import { PrintUpload } from "@/components/print-upload";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 import { materials, products } from "@/lib/catalog";
 
@@ -94,55 +95,7 @@ export default async function LocaleHome({ params }: PageProps) {
           </div>
 
           <div className="print-layout">
-            <section className="panel upload-panel">
-            <h2>{t.upload.title}</h2>
-            <p>{t.upload.description}</p>
-            <div className="dropzone">
-              <div>
-                <Box size={34} />
-                <strong>{t.upload.dropTitle}</strong>
-                <span>{t.upload.dropSubtitle}</span>
-              </div>
-            </div>
-
-            <div className="form-grid">
-              <label className="field">
-                <span>{t.upload.material}</span>
-                <select defaultValue="PLA">
-                  <option>PLA</option>
-                  <option>PETG</option>
-                  <option>ASA</option>
-                  <option>TPU</option>
-                </select>
-              </label>
-              <label className="field">
-                <span>{t.upload.color}</span>
-                <select defaultValue="Black">
-                  <option>Black</option>
-                  <option>White</option>
-                  <option>Grey</option>
-                  <option>Custom color</option>
-                </select>
-              </label>
-              <label className="field">
-                <span>{t.upload.quality}</span>
-                <select defaultValue="Standard">
-                  <option>Draft</option>
-                  <option>Standard</option>
-                  <option>Fine</option>
-                </select>
-              </label>
-              <label className="field">
-                <span>{t.upload.quantity}</span>
-                <input min="1" type="number" defaultValue="1" />
-              </label>
-            </div>
-
-            <div className="estimate">
-              <span>{t.upload.estimate}</span>
-              <strong>120-180 DKK</strong>
-            </div>
-            </section>
+            <PrintUpload copy={t.upload} />
 
             <aside className="panel process-panel">
               <div className="process-step">
