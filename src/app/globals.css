@@ -1790,3 +1790,90 @@ textarea {
   padding: 0 12px;
   width: 100%;
 }
+
+/* Admin product form */
+.admin-product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.admin-product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-product-edit-cell {
+  padding: 0 !important;
+  background: var(--surface-muted);
+}
+
+.admin-product-edit-cell .admin-product-form {
+  padding: 16px;
+}
+
+.admin-product-add-wrap {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.admin-product-preview {
+  margin-top: 8px;
+}
+
+.admin-product-preview img {
+  border-radius: 4px;
+  height: 80px;
+  object-fit: cover;
+  width: 80px;
+}
+
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.field-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Admin customer info block */
+.admin-customer-info {
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--surface-muted);
+  border-radius: 6px;
+}
+
+.admin-customer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 16px;
+  font-size: 0.88rem;
+  margin-top: 6px;
+}
+
+.admin-customer-grid dt {
+  color: var(--muted);
+}
+
+.admin-customer-grid dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+@media (max-width: 780px) {
+  .admin-product-grid {
+    grid-template-columns: 1fr;
+  }
+}

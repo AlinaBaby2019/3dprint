@@ -55,7 +55,7 @@ type ProjectStatus = Database["public"]["Enums"]["project_status"];
 type PrintJobStatus = Database["public"]["Enums"]["print_job_status"];
 
 type AdminProject = Tables<"projects"> & {
-  profiles: Pick<Tables<"profiles">, "full_name" | "customer_type" | "company_name" | "phone" | "email"> | null;
+  profiles: Pick<Tables<"profiles">, "full_name" | "customer_type" | "company_name" | "phone"> | null;
   project_files: Pick<
     Tables<"project_files">,
     "bucket" | "created_at" | "id" | "original_name" | "path" | "role" | "size_bytes"
@@ -156,7 +156,7 @@ export function AdminPanel({ copy, locale }: { copy: AdminCopy; locale: Locale }
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "*,profiles(full_name,customer_type,company_name,phone,email),project_files(id,bucket,created_at,original_name,path,role,size_bytes),quotes(id,status,amount_dkk,currency,customer_notes,admin_notes,expires_at,expected_completion_at,created_at),print_jobs(id,status,material_id,color,printer_name,updated_at)"
+        "*,profiles(full_name,customer_type,company_name,phone),project_files(id,bucket,created_at,original_name,path,role,size_bytes),quotes(id,status,amount_dkk,currency,customer_notes,admin_notes,expires_at,expected_completion_at,created_at),print_jobs(id,status,material_id,color,printer_name,updated_at)"
       )
       .order("created_at", { ascending: false })
       .limit(50);
@@ -531,6 +531,27 @@ export function AdminPanel({ copy, locale }: { copy: AdminCopy; locale: Locale }
                   {latestQuote && <em>{formatStatus(latestQuote.status)}</em>}
                 </div>
               </div>
+
+              {selectedProject.profiles && (
+                <div className="admin-customer-info">
+                  <h3>{copy.customerContact}</h3>
+                  <div className="admin-customer-grid">
+                    {selectedProject.profiles.full_name && (
+                      <span><em>Navn</em>{selectedProject.profiles.full_name}</span>
+                    )}
+                    {selectedProject.profiles.phone && (
+                      <span><em>Tlf.</em>{selectedProject.profiles.phone}</span>
+                    )}
+                    {selectedProject.profiles.customer_type && (
+                      <span><em>Type</em>{selectedProject.profiles.customer_type}</span>
+                    )}
+                    {selectedProject.profiles.company_name && (
+                      <span><em>Firma</em>{selectedProject.profiles.company_name}</span>
+                    )}
+                    <span><em>User ID</em><code>{selectedProject.user_id}</code></span>
+                  </div>
+                </div>
+              )}
 
               <div className="admin-files">
                 <h3>{copy.files}</h3>
