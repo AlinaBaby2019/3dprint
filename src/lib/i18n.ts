@@ -92,7 +92,29 @@ export const dictionary = {
       delivery: "Levering",
       print: "Print",
       items: "Indhold",
-      created: "Oprettet"
+      created: "Oprettet",
+      deliveryPickup: "Afhentning",
+      deliveryLocal: "Lokal levering",
+      deliveryShipping: "Forsendelse",
+      statuses: {
+        pending_payment: "Afventer betaling",
+        paid: "Betalt",
+        in_production: "I produktion",
+        ready: "Klar til afhentning",
+        fulfilled: "Afsluttet",
+        refunded: "Refunderet",
+        cancelled: "Annulleret",
+        not_required: "Ikke påkrævet",
+        pickup_ready: "Klar til afhentning",
+        shipped: "Afsendt",
+        out_for_delivery: "Undervejs",
+        delivered: "Leveret",
+        failed: "Fejlet",
+        queued: "I kø",
+        printing: "Printes",
+        post_processing: "Efterbehandling",
+        done: "Færdig"
+      }
     },
     account: {
       title: "Konto",
@@ -377,7 +399,29 @@ export const dictionary = {
       delivery: "Delivery",
       print: "Print",
       items: "Items",
-      created: "Placed"
+      created: "Placed",
+      deliveryPickup: "Pickup",
+      deliveryLocal: "Local delivery",
+      deliveryShipping: "Shipping",
+      statuses: {
+        pending_payment: "Pending payment",
+        paid: "Paid",
+        in_production: "In production",
+        ready: "Ready for pickup",
+        fulfilled: "Fulfilled",
+        refunded: "Refunded",
+        cancelled: "Cancelled",
+        not_required: "Not required",
+        pickup_ready: "Ready for pickup",
+        shipped: "Shipped",
+        out_for_delivery: "Out for delivery",
+        delivered: "Delivered",
+        failed: "Failed",
+        queued: "Queued",
+        printing: "Printing",
+        post_processing: "Post-processing",
+        done: "Done"
+      }
     },
     account: {
       title: "Account",
@@ -661,7 +705,29 @@ export const dictionary = {
       delivery: "配送",
       print: "打印",
       items: "商品",
-      created: "下单时间"
+      created: "下单时间",
+      deliveryPickup: "自取",
+      deliveryLocal: "同城配送",
+      deliveryShipping: "快递",
+      statuses: {
+        pending_payment: "等待付款",
+        paid: "已付款",
+        in_production: "生产中",
+        ready: "可取货",
+        fulfilled: "已完成",
+        refunded: "已退款",
+        cancelled: "已取消",
+        not_required: "无需配送",
+        pickup_ready: "可取货",
+        shipped: "已发货",
+        out_for_delivery: "派送中",
+        delivered: "已送达",
+        failed: "失败",
+        queued: "排队中",
+        printing: "打印中",
+        post_processing: "后处理",
+        done: "完成"
+      }
     },
     account: {
       title: "账户",

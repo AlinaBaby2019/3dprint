@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Package, Search } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { Locale } from "@/lib/i18n";
@@ -18,6 +18,10 @@ type OrderStatusCopy = {
   print: string;
   items: string;
   created: string;
+  statuses: Record<string, string>;
+  deliveryPickup: string;
+  deliveryLocal: string;
+  deliveryShipping: string;
 };
 
 type OrderRow = Tables<"orders"> & {
@@ -26,8 +30,16 @@ type OrderRow = Tables<"orders"> & {
   print_jobs: Pick<Tables<"print_jobs">, "id" | "printer_name" | "status">[];
 };
 
-function formatStatus(status: string) {
-  return status.replaceAll("_", " ");
+function statusLabel(status: string, statuses: Record<string, string>): string {
+  return statuses[status] ?? status.replaceAll("_", " ");
+}
+
+function statusBadgeClass(status: string): string {
+  if (["paid", "fulfilled", "done", "delivered"].includes(status)) return "status-badge status-success";
+  if (["in_production", "printing", "post_processing", "ready", "shipped", "out_for_delivery", "pickup_ready"].includes(status)) return "status-badge status-info";
+  if (["pending_payment", "queued"].includes(status)) return "status-badge status-warning";
+  if (["cancelled", "failed", "refunded"].includes(status)) return "status-badge status-error";
+  return "status-badge status-muted";
 }
 
 function formatDate(value: string, locale: Locale) {
@@ -36,6 +48,13 @@ function formatDate(value: string, locale: Locale) {
     month: "short",
     year: "numeric"
   }).format(new Date(value));
+}
+
+function deliveryMethodLabel(method: string, copy: OrderStatusCopy): string {
+  if (method === "pickup_aarhus") return copy.deliveryPickup;
+  if (method === "local_delivery") return copy.deliveryLocal;
+  if (method === "shipping") return copy.deliveryShipping;
+  return method;
 }
 
 export function OrderStatusLookup({
@@ -53,24 +72,17 @@ export function OrderStatusLookup({
 
   const visibleOrders = useMemo(() => {
     const value = query.trim().toLowerCase();
-    if (!value) {
-      return orders;
-    }
-
-    return orders.filter((order) => {
-      return (
+    if (!value) return orders;
+    return orders.filter(
+      (order) =>
         order.id.toLowerCase().startsWith(value) ||
         order.customer_email?.toLowerCase().includes(value) ||
         order.order_items.some((item) => item.title.toLowerCase().includes(value))
-      );
-    });
+    );
   }, [orders, query]);
 
   async function loadOrders() {
-    if (!supabase) {
-      return;
-    }
-
+    if (!supabase) return;
     setLoading(true);
     setMessage(null);
 
@@ -84,9 +96,7 @@ export function OrderStatusLookup({
 
     const { data, error } = await supabase
       .from("orders")
-      .select(
-        "*,order_items(id,title,quantity,unit_price_dkk,metadata),deliveries(id,status,method,tracking_reference),print_jobs(id,status,printer_name)"
-      )
+      .select("*,order_items(id,title,quantity,unit_price_dkk,metadata),deliveries(id,status,method,tracking_reference),print_jobs(id,status,printer_name)")
       .order("created_at", { ascending: false })
       .limit(20);
 
@@ -115,7 +125,7 @@ export function OrderStatusLookup({
     <div className="order-status-panel">
       <form className="status-box" onSubmit={searchOrders}>
         <input
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder={copy.placeholder}
           type="text"
           value={query}
@@ -128,48 +138,72 @@ export function OrderStatusLookup({
 
       {message && <p className="form-note">{message}</p>}
 
-      {!message && visibleOrders.length === 0 && <p className="empty-state">{copy.empty}</p>}
+      {!message && visibleOrders.length === 0 && (
+        <p className="empty-state">{copy.empty}</p>
+      )}
 
       {visibleOrders.length > 0 && (
         <div className="order-list">
           {visibleOrders.map((order) => {
             const delivery = order.deliveries[0];
             const printJob = order.print_jobs[0];
+            const showFooter =
+              (delivery && delivery.status !== "not_required") ||
+              delivery?.tracking_reference ||
+              (printJob && printJob.status !== "done");
 
             return (
-              <article className="order-row" key={order.id}>
-                <div className="order-row-head">
-                  <div>
-                    <span>{copy.order}</span>
-                    <strong>#{order.id.slice(0, 8)}</strong>
-                    <em>{copy.created} {formatDate(order.created_at, locale)}</em>
+              <article className="order-card" key={order.id}>
+
+                {/* header: order ID + status badge */}
+                <div className="order-card-head">
+                  <div className="order-card-ref">
+                    <span className="order-card-label">{copy.order}</span>
+                    <strong>#{order.id.slice(0, 8).toUpperCase()}</strong>
                   </div>
-                  <div>
-                    <span>{copy.total}</span>
-                    <strong>{order.total_dkk} {order.currency}</strong>
-                    <em>{formatStatus(order.status)}</em>
-                  </div>
-                  <div>
-                    <span>{copy.delivery}</span>
-                    <strong>{delivery ? formatStatus(delivery.status) : "-"}</strong>
-                    {delivery && <em>{delivery.method}</em>}
-                  </div>
-                  <div>
-                    <span>{copy.print}</span>
-                    <strong>{printJob ? formatStatus(printJob.status) : "-"}</strong>
-                    {printJob?.printer_name && <em>{printJob.printer_name}</em>}
-                  </div>
+                  <span className={statusBadgeClass(order.status)}>
+                    {statusLabel(order.status, copy.statuses)}
+                  </span>
                 </div>
 
-                <div className="order-items">
-                  <span>{copy.items}</span>
-                  {order.order_items.map((item) => (
-                    <div className="order-item-line" key={item.id}>
-                      <strong>{item.quantity} x {item.title}</strong>
-                      <em>{item.unit_price_dkk} DKK</em>
-                    </div>
-                  ))}
+                {/* meta bar: date + total */}
+                <div className="order-card-meta">
+                  <span>{copy.created} {formatDate(order.created_at, locale)}</span>
+                  <span>{order.total_dkk} {order.currency}</span>
                 </div>
+
+                {/* items */}
+                <ul className="order-item-list">
+                  {order.order_items.map((item) => (
+                    <li className="order-item-line" key={item.id}>
+                      <span>{item.quantity} × {item.title}</span>
+                      <span>{item.unit_price_dkk} DKK</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* delivery / print footer */}
+                {showFooter && (
+                  <div className="order-card-footer">
+                    {delivery && (
+                      <span className="order-card-footer-item">
+                        <Package size={13} />
+                        {delivery.status !== "not_required"
+                          ? statusLabel(delivery.status, copy.statuses)
+                          : deliveryMethodLabel(delivery.method, copy)}
+                        {delivery.tracking_reference && (
+                          <em className="order-tracking">{delivery.tracking_reference}</em>
+                        )}
+                      </span>
+                    )}
+                    {printJob && printJob.status !== "done" && (
+                      <span className={statusBadgeClass(printJob.status)}>
+                        {statusLabel(printJob.status, copy.statuses)}
+                      </span>
+                    )}
+                  </div>
+                )}
+
               </article>
             );
           })}
