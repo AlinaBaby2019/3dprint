@@ -796,7 +796,66 @@ Future Python worker responsibilities:
 - Validate or repair mesh files
 - Generate preview thumbnails
 
-## 13. Deployment Architecture
+## 13. Supabase CLI Workflow
+
+The Supabase CLI (`supabase` v2.97.0) is installed at `/usr/bin/supabase` on the
+VPS and is linked to the production project.
+
+### 13.1 Linked Project
+
+| Field | Value |
+| --- | --- |
+| Project name | aarhus-3d-print |
+| Reference ID | `thkmgmqinfedxqhwmxvw` |
+| Region | West EU (Ireland) |
+| Dashboard | https://supabase.com/dashboard/project/thkmgmqinfedxqhwmxvw |
+
+The CLI is pre-authenticated. Run `supabase projects list` to confirm the link.
+
+### 13.2 Common Commands
+
+```bash
+# Show applied vs pending migrations
+supabase migration list
+
+# Apply all pending local migrations to remote DB
+supabase db push
+
+# Create a new timestamped migration file
+supabase migration new <description>
+# Example: supabase migration new add_slug_index
+# Creates: supabase/migrations/YYYYMMDDHHMMSS_add_slug_index.sql
+
+# Regenerate TypeScript types after a schema change
+supabase gen types typescript \
+  --project-id thkmgmqinfedxqhwmxvw \
+  > src/lib/supabase/database.types.ts
+```
+
+### 13.3 Migration Naming Convention
+
+Files live in `supabase/migrations/` and are named:
+
+```text
+YYYYMMDDHHMMSS_short_description.sql
+```
+
+The timestamp doubles as the version identifier used by `supabase migration list`
+to track which migrations have been applied on the remote.
+
+### 13.4 Schema Change Workflow
+
+1. Write the SQL in a new migration file.
+2. Run `supabase db push` from the VPS to apply it.
+3. Run `supabase gen types typescript ...` to update `database.types.ts`.
+4. Commit both files (`supabase/migrations/*.sql` and `database.types.ts`).
+5. Rebuild and redeploy the Docker image:
+
+```bash
+docker compose --env-file .env.production up -d --build
+```
+
+## 14. Deployment Architecture
 
 Recommended MVP deployment:
 
@@ -827,7 +886,7 @@ Slicer automation
 AI modeling provider
 ```
 
-## 14. MVP Scope
+## 15. MVP Scope
 
 ### Phase 1
 
@@ -867,7 +926,7 @@ AI modeling provider
 - Business account features
 - Batch order tools
 
-## 15. Design Direction
+## 16. Design Direction
 
 The frontend should use a Nordic minimalist style:
 
@@ -886,7 +945,7 @@ Local 3D printing in Aarhus
 Upload a model, get a quote, receive locally
 ```
 
-## 16. Key Technical Decisions
+## 17. Key Technical Decisions
 
 1. Use a project-centered model to keep future AI modeling compatible.
 2. Use manual quote confirmation for custom prints in the MVP.
@@ -897,9 +956,9 @@ Upload a model, get a quote, receive locally
 7. Deploy on VPS first for flexibility, while using managed Supabase services to
    reduce operational maintenance.
 
-## 17. Implementation Progress
+## 18. Implementation Progress
 
-Last updated: 2026-05-03 (session 7)
+Last updated: 2026-05-03 (session 8)
 
 ### Completed
 
@@ -962,10 +1021,22 @@ Last updated: 2026-05-03 (session 7)
 - Business customer profile fields in the account page: full name, phone,
   customer type (private/business), company name, CVR, EAN, and invoice email.
   Data saved to `profiles` table with existing RLS update policy.
-- Admin products management panel at `/[locale]/admin`: lists all database
-  products with slug, name, price (inline edit), and active toggle. Supports
-  adding new products with slug, name, price, and category. Implemented in
-  `src/components/admin-products.tsx`.
+- Admin products management panel at `/[locale]/admin`: full inline edit form
+  per product with multilingual names (da/en/zh), multilingual descriptions
+  (da/en/zh), image upload to the public `product-images` Supabase Storage
+  bucket (public URL stored in `products.image_path`), promotional video URL
+  (`metadata.video_url`), available colors (`metadata.colors`), customizable
+  flag (`metadata.customizable`), lead time (`metadata.lead_time_days`), price,
+  category, and active toggle. "Add product" form uses the same full set of
+  fields. Implemented in `src/components/admin-products.tsx`.
+- `product-images` Supabase Storage bucket: public read, admin write. Created
+  via `supabase/migrations/20260503100000_product_images_bucket.sql`.
+- Bug fix: `admin-panel.tsx` removed `email` from the `profiles` join query,
+  fixing the "column profiles_1.email does not exist" crash in the project
+  detail view.
+- Order status lookup redesigned as a single-row-per-order table with columns:
+  order ID (monospace), date, items summary, total, delivery method, status
+  badge. Replaced the previous multi-line card layout.
 - `AccountNav` label prop made optional to fix type errors in legal pages that
   do not show navigation labels.
 - Stripe client initialization deferred to call time (`getStripe()`) to prevent
@@ -1033,8 +1104,6 @@ Last updated: 2026-05-03 (session 7)
 - Stripe integration is wired and will activate once the three Stripe
   environment variables are set. Product checkout and quote-based checkout
   share the same `/api/checkout` route.
-- Supabase must be linked to a dedicated project named `aarhus-3d-print`
-  before pushing migrations. Do not reuse the existing `FlexWork` project.
 
 ### Admin Module Status
 
@@ -1051,19 +1120,15 @@ Implemented:
 - Order queue with order/delivery status controls and status notification emails.
 - Quote email notification trigger (`POST /api/admin/notify-quote`).
 - Material and color management (CRUD with multiplier and stock fields).
-- Products management (DB-backed CRUD, slug, name, price, active toggle).
+- Products management (DB-backed CRUD, multilingual name/description, image
+  upload to `product-images` bucket, video URL, colors, customizable, lead
+  time, price, active toggle).
 - Payments view with refund marking.
 
 ### Next Planned Work
 
-- Supabase project setup: link CLI to dedicated `aarhus-3d-print` project and
-  push all migrations in `supabase/migrations/`.
-- Deploy to VPS: build Docker image, configure `.env.production`, run
-  `docker compose up`.
-- Slicer-based quote automation to replace file-size estimate.
+- Slicer-based quote automation to replace the file-size estimate.
 - Playwright browser install (`npx playwright install chromium`) and E2E run
   against dev server.
-- CSS polish: photo grid styles, status badge styles, and checkbox-label styles
-  for the new UI elements need to be added to globals.css.
-- SEO and meta tags: `<title>` and `<meta description>` for each locale page.
-- Supabase project setup and migration push (dedicated `aarhus-3d-print` project).
+- MobilePay Business webhook: verify and activate `POST /api/webhooks/mobilepay`.
+- SEO: `<meta description>` and Open Graph tags for each locale page.
