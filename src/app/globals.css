@@ -1691,110 +1691,85 @@ textarea {
 /* Order status lookup */
 
 .order-status-panel {
-  max-width: 680px;
+  max-width: 900px;
 }
 
-.order-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.order-card {
-  background: var(--surface);
+.order-table-wrap {
   border: 1px solid var(--border);
   border-radius: 8px;
+  margin-top: 16px;
   overflow: hidden;
 }
 
-.order-card-head {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 16px;
+.order-table {
+  border-collapse: collapse;
+  font-size: 14px;
+  width: 100%;
 }
 
-.order-card-ref {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.order-table thead tr {
+  background: var(--surface-muted);
 }
 
-.order-card-label {
+.order-table th {
+  border-bottom: 1px solid var(--border);
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
+  padding: 10px 14px;
+  text-align: left;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.order-card-ref strong {
-  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
-  font-size: 15px;
-  letter-spacing: 0.03em;
-}
-
-.order-card-meta {
-  background: var(--surface-muted);
-  border-top: 1px solid var(--border);
-  color: var(--muted);
-  display: flex;
-  font-size: 13px;
-  gap: 20px;
-  padding: 8px 16px;
-}
-
-.order-item-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.order-item-line {
-  align-items: center;
-  border-top: 1px solid var(--surface-muted);
-  display: flex;
-  font-size: 14px;
-  justify-content: space-between;
-  padding: 10px 16px;
-}
-
-.order-item-line:first-child {
-  border-top: 1px solid var(--border);
-}
-
-.order-item-line span:last-child {
-  color: var(--muted);
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
-  padding-left: 12px;
-}
-
-.order-card-footer {
-  align-items: center;
-  background: var(--surface-muted);
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 10px 16px;
-}
-
-.order-card-footer-item {
-  align-items: center;
-  color: var(--muted);
-  display: flex;
-  font-size: 13px;
-  gap: 6px;
-}
-
-.order-tracking {
+.order-table tbody tr {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 12px;
-  font-style: normal;
-  padding: 2px 7px;
+  border-bottom: 1px solid var(--surface-muted);
+}
+
+.order-table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.order-table tbody tr:hover {
+  background: #fafaf8;
+}
+
+.order-table td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+
+.order-table-id {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.order-table-date {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.order-table-items {
+  color: var(--text);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-table-total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.order-table-delivery {
+  color: var(--muted);
+  white-space: nowrap;
 }
 
 /* Inline address picker for quote acceptance */

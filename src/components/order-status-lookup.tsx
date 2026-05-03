@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Package, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { Locale } from "@/lib/i18n";
@@ -25,7 +25,7 @@ type OrderStatusCopy = {
 };
 
 type OrderRow = Tables<"orders"> & {
-  order_items: Pick<Tables<"order_items">, "id" | "metadata" | "quantity" | "title" | "unit_price_dkk">[];
+  order_items: Pick<Tables<"order_items">, "id" | "quantity" | "title" | "unit_price_dkk" | "metadata">[];
   deliveries: Pick<Tables<"deliveries">, "id" | "method" | "status" | "tracking_reference">[];
   print_jobs: Pick<Tables<"print_jobs">, "id" | "printer_name" | "status">[];
 };
@@ -43,27 +43,23 @@ function statusBadgeClass(status: string): string {
 }
 
 function formatDate(value: string, locale: Locale) {
-  return new Intl.DateTimeFormat(locale, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric"
-  }).format(new Date(value));
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value));
 }
 
-function deliveryMethodLabel(method: string, copy: OrderStatusCopy): string {
-  if (method === "pickup_aarhus") return copy.deliveryPickup;
-  if (method === "local_delivery") return copy.deliveryLocal;
-  if (method === "shipping") return copy.deliveryShipping;
-  return method;
+function deliveryLabel(delivery: OrderRow["deliveries"][0] | undefined, copy: OrderStatusCopy): string {
+  if (!delivery) return "—";
+  if (delivery.status !== "not_required") return statusLabel(delivery.status, copy.statuses);
+  if (delivery.method === "pickup_aarhus") return copy.deliveryPickup;
+  if (delivery.method === "local_delivery") return copy.deliveryLocal;
+  if (delivery.method === "shipping") return copy.deliveryShipping;
+  return delivery.method;
 }
 
-export function OrderStatusLookup({
-  copy,
-  locale
-}: {
-  copy: OrderStatusCopy;
-  locale: Locale;
-}) {
+function itemsSummary(items: OrderRow["order_items"]): string {
+  return items.map((i) => `${i.quantity} × ${i.title}`).join(", ");
+}
+
+export function OrderStatusLookup({ copy, locale }: { copy: OrderStatusCopy; locale: Locale }) {
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [query, setQuery] = useState("");
@@ -74,10 +70,10 @@ export function OrderStatusLookup({
     const value = query.trim().toLowerCase();
     if (!value) return orders;
     return orders.filter(
-      (order) =>
-        order.id.toLowerCase().startsWith(value) ||
-        order.customer_email?.toLowerCase().includes(value) ||
-        order.order_items.some((item) => item.title.toLowerCase().includes(value))
+      (o) =>
+        o.id.toLowerCase().startsWith(value) ||
+        o.customer_email?.toLowerCase().includes(value) ||
+        o.order_items.some((i) => i.title.toLowerCase().includes(value))
     );
   }, [orders, query]);
 
@@ -101,29 +97,15 @@ export function OrderStatusLookup({
       .limit(20);
 
     setLoading(false);
-
-    if (error) {
-      setOrders([]);
-      setMessage(error.message);
-      return;
-    }
-
+    if (error) { setOrders([]); setMessage(error.message); return; }
     setOrders((data ?? []) as OrderRow[]);
   }
 
-  useEffect(() => {
-    void loadOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supabase]);
-
-  function searchOrders(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    void loadOrders();
-  }
+  useEffect(() => { void loadOrders(); }, [supabase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="order-status-panel">
-      <form className="status-box" onSubmit={searchOrders}>
+      <form className="status-box" onSubmit={(e: FormEvent) => { e.preventDefault(); void loadOrders(); }}>
         <input
           onChange={(e) => setQuery(e.target.value)}
           placeholder={copy.placeholder}
@@ -137,76 +119,34 @@ export function OrderStatusLookup({
       </form>
 
       {message && <p className="form-note">{message}</p>}
-
-      {!message && visibleOrders.length === 0 && (
-        <p className="empty-state">{copy.empty}</p>
-      )}
+      {!message && visibleOrders.length === 0 && <p className="empty-state">{copy.empty}</p>}
 
       {visibleOrders.length > 0 && (
-        <div className="order-list">
-          {visibleOrders.map((order) => {
-            const delivery = order.deliveries[0];
-            const printJob = order.print_jobs[0];
-            const showFooter =
-              (delivery && delivery.status !== "not_required") ||
-              delivery?.tracking_reference ||
-              (printJob && printJob.status !== "done");
-
-            return (
-              <article className="order-card" key={order.id}>
-
-                {/* header: order ID + status badge */}
-                <div className="order-card-head">
-                  <div className="order-card-ref">
-                    <span className="order-card-label">{copy.order}</span>
-                    <strong>#{order.id.slice(0, 8).toUpperCase()}</strong>
-                  </div>
-                  <span className={statusBadgeClass(order.status)}>
-                    {statusLabel(order.status, copy.statuses)}
-                  </span>
-                </div>
-
-                {/* meta bar: date + total */}
-                <div className="order-card-meta">
-                  <span>{copy.created} {formatDate(order.created_at, locale)}</span>
-                  <span>{order.total_dkk} {order.currency}</span>
-                </div>
-
-                {/* items */}
-                <ul className="order-item-list">
-                  {order.order_items.map((item) => (
-                    <li className="order-item-line" key={item.id}>
-                      <span>{item.quantity} × {item.title}</span>
-                      <span>{item.unit_price_dkk} DKK</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* delivery / print footer */}
-                {showFooter && (
-                  <div className="order-card-footer">
-                    {delivery && (
-                      <span className="order-card-footer-item">
-                        <Package size={13} />
-                        {delivery.status !== "not_required"
-                          ? statusLabel(delivery.status, copy.statuses)
-                          : deliveryMethodLabel(delivery.method, copy)}
-                        {delivery.tracking_reference && (
-                          <em className="order-tracking">{delivery.tracking_reference}</em>
-                        )}
-                      </span>
-                    )}
-                    {printJob && printJob.status !== "done" && (
-                      <span className={statusBadgeClass(printJob.status)}>
-                        {statusLabel(printJob.status, copy.statuses)}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-              </article>
-            );
-          })}
+        <div className="order-table-wrap">
+          <table className="order-table">
+            <thead>
+              <tr>
+                <th>{copy.order}</th>
+                <th>{copy.created}</th>
+                <th>{copy.items}</th>
+                <th>{copy.total}</th>
+                <th>{copy.delivery}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleOrders.map((order) => (
+                <tr key={order.id}>
+                  <td className="order-table-id">#{order.id.slice(0, 8).toUpperCase()}</td>
+                  <td className="order-table-date">{formatDate(order.created_at, locale)}</td>
+                  <td className="order-table-items">{itemsSummary(order.order_items)}</td>
+                  <td className="order-table-total">{order.total_dkk} {order.currency}</td>
+                  <td className="order-table-delivery">{deliveryLabel(order.deliveries[0], copy)}</td>
+                  <td><span className={statusBadgeClass(order.status)}>{statusLabel(order.status, copy.statuses)}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
