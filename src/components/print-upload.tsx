@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Box, FileUp, RotateCcw, Send } from "lucide-react";
+import Link from "next/link";
+import { Box, CheckCircle2, FileUp, RotateCcw, Send } from "lucide-react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
+import { formatBuildVolume, printerConfig } from "@/lib/print-config";
 import { createBrowserSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/browser";
 
 type UploadCopy = {
@@ -18,6 +20,9 @@ type UploadCopy = {
   delivery: string;
   estimate: string;
   submit: string;
+  submitSuccess: string;
+  submitViewAccount: string;
+  submitPartial: string;
 };
 
 type Dimensions = {
@@ -77,7 +82,7 @@ function estimatePrice(input: {
   };
 }
 
-export function PrintUpload({ copy }: { copy: UploadCopy }) {
+export function PrintUpload({ copy, locale }: { copy: UploadCopy; locale: string }) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -92,6 +97,8 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
   const [delivery, setDelivery] = useState("Pickup");
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submittedProjectId, setSubmittedProjectId] = useState<string | null>(null);
+  const [fileUploadFailed, setFileUploadFailed] = useState(false);
 
   const estimate = useMemo(() => {
     const fileSizeMb = file ? file.size / 1024 / 1024 : 1;
@@ -226,6 +233,14 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
       if (!selectedFile) {
         return;
       }
+
+      const maxBytes = 100 * 1024 * 1024;
+      if (selectedFile.size > maxBytes) {
+        setSubmitMessage(`File is too large (${formatFileSize(selectedFile.size)}). Maximum is 100 MB.`);
+        return;
+      }
+
+      setSubmitMessage(null);
       setFile(selectedFile);
     },
     []
@@ -240,7 +255,10 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
   }, [clearPreview, file, renderPreview]);
 
   const oversized =
-    dimensions && (dimensions.x > 256 || dimensions.y > 256 || dimensions.z > 260);
+    dimensions &&
+    (dimensions.x > printerConfig.buildVolumeMm.x ||
+      dimensions.y > printerConfig.buildVolumeMm.y ||
+      dimensions.z > printerConfig.buildVolumeMm.z);
 
   const submitForReview = async () => {
     if (!file) {
@@ -313,11 +331,12 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
 
     if (uploadError) {
       setSubmitting(false);
-      setSubmitMessage(uploadError.message);
+      setFileUploadFailed(true);
+      setSubmittedProjectId(project.id);
       return;
     }
 
-    const { error: fileError } = await supabase.from("project_files").insert({
+    await supabase.from("project_files").insert({
       project_id: project.id,
       user_id: user.id,
       role: "original_upload",
@@ -332,13 +351,59 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
       }
     });
 
+    // Fire-and-forget: send confirmation email via server route
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (accessToken) {
+      void fetch("/api/projects/submit-confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ projectId: project.id })
+      });
+    }
+
     setSubmitting(false);
-    setSubmitMessage(
-      fileError
-        ? fileError.message
-        : `Project submitted for review. Reference: ${project.id.slice(0, 8)}`
-    );
+    setFileUploadFailed(false);
+    setSubmittedProjectId(project.id);
   };
+
+  function resetForm() {
+    setFile(null);
+    setDimensions(null);
+    setPreviewError(null);
+    setSubmitMessage(null);
+    setSubmittedProjectId(null);
+    setFileUploadFailed(false);
+    clearPreview();
+  }
+
+  if (submittedProjectId) {
+    return (
+      <section className="panel upload-panel">
+        <div className="submit-success">
+          <CheckCircle2 size={40} className={fileUploadFailed ? "icon-warning" : "icon-success"} />
+          <div>
+            <p className="submit-success-message">
+              {fileUploadFailed
+                ? `${copy.submitPartial} #${submittedProjectId.slice(0, 8)}`
+                : copy.submitSuccess}
+            </p>
+            {!fileUploadFailed && (
+              <p className="muted-label">#{submittedProjectId.slice(0, 8)}</p>
+            )}
+          </div>
+          <div className="upload-actions">
+            <Link className="button primary" href={`/${locale}/account`}>
+              {copy.submitViewAccount}
+            </Link>
+            <button className="button secondary" onClick={resetForm} type="button">
+              {copy.submit}
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="panel upload-panel">
@@ -390,7 +455,7 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
           <div>
             <span>Build volume</span>
             <strong className={oversized ? "warning" : undefined}>
-              {oversized ? "Needs review" : "256 x 256 x 260 mm"}
+              {oversized ? "Needs review" : formatBuildVolume()}
             </strong>
           </div>
         </div>
@@ -472,3 +537,4 @@ export function PrintUpload({ copy }: { copy: UploadCopy }) {
     </section>
   );
 }
+

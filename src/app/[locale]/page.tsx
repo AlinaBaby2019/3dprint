@@ -1,15 +1,60 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import type { Route } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { PackageCheck, Search, Upload } from "lucide-react";
+import { PackageCheck, Upload } from "lucide-react";
 import { AccountNav } from "@/components/account-nav";
+import { OrderStatusLookup } from "@/components/order-status-lookup";
 import { PrintUpload } from "@/components/print-upload";
+import { ProductCatalog } from "@/components/product-catalog";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
-import { materials, products } from "@/lib/catalog";
+import { materials } from "@/lib/catalog";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
 };
+
+const pageMeta: Record<string, { title: string; description: string }> = {
+  da: {
+    title: "Aarhus 3D Print – Lokal 3D printservice i Aarhus",
+    description:
+      "Upload din model, vælg materiale og få et hurtigt tilbud. Lokal 3D print fra Aarhus – afhentning, lokal levering og forsendelse."
+  },
+  en: {
+    title: "Aarhus 3D Print – Local 3D printing service in Aarhus",
+    description:
+      "Upload a model, choose material, and get a quick quote. Local 3D printing from Aarhus — pickup, local delivery, and shipping."
+  },
+  zh: {
+    title: "奥胡斯 3D 打印 – 奥胡斯本地打印服务",
+    description:
+      "上传模型，选择材料，快速获得报价。奥胡斯本地 3D 打印，支持自取、同城配送和快递。"
+  }
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  if (!isLocale(rawLocale)) return {};
+  const meta = pageMeta[rawLocale];
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  return {
+    title: meta.title,
+    description: meta.description,
+    alternates: {
+      canonical: `${siteUrl}/${rawLocale}`,
+      languages: Object.fromEntries(locales.map((l) => [l, `${siteUrl}/${l}`]))
+    },
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      url: `${siteUrl}/${rawLocale}`,
+      siteName: "Aarhus 3D Print",
+      locale: rawLocale === "da" ? "da_DK" : rawLocale === "zh" ? "zh_CN" : "en_GB",
+      type: "website"
+    }
+  };
+}
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -35,10 +80,11 @@ export default async function LocaleHome({ params }: PageProps) {
           </Link>
 
           <nav className="nav" aria-label="Primary">
-            <a href="#print">{t.nav.print}</a>
-            <a href="#products">{t.nav.products}</a>
+            <Link href={`/${locale}/print` as Route}>{t.nav.print}</Link>
+            <Link href={`/${locale}/products` as Route}>{t.nav.products}</Link>
             <a href="#materials">{t.nav.materials}</a>
             <a href="#orders">{t.nav.orders}</a>
+            <Link href={`/${locale}/faq` as Route}>{t.nav.faq}</Link>
             <AccountNav label={t.nav.account} locale={locale} />
             <span className="language-switch" aria-label="Language">
               {locales.map((item) => (
@@ -81,9 +127,9 @@ export default async function LocaleHome({ params }: PageProps) {
               width={1200}
             />
             <div className="hero-facts" aria-label="Service highlights">
-              <span>24-48h quote</span>
-              <span>Aarhus pickup</span>
-              <span>PLA · PETG · TPU</span>
+              <span>{t.hero.factQuote}</span>
+              <span>{t.hero.factPickup}</span>
+              <span>{t.hero.factMaterials}</span>
             </div>
           </div>
         </section>
@@ -97,23 +143,23 @@ export default async function LocaleHome({ params }: PageProps) {
           </div>
 
           <div className="print-layout">
-            <PrintUpload copy={t.upload} />
+            <PrintUpload copy={t.upload} locale={locale} />
 
             <aside className="panel process-panel">
               <div className="process-step">
                 <span>01</span>
-                <strong>Upload</strong>
-                <p>STL, 3MF, OBJ, STEP, images, or ZIP files.</p>
+                <strong>{t.upload.step1}</strong>
+                <p>{t.upload.step1Body}</p>
               </div>
               <div className="process-step">
                 <span>02</span>
-                <strong>Review</strong>
-                <p>Printability and final price are confirmed manually.</p>
+                <strong>{t.upload.step2}</strong>
+                <p>{t.upload.step2Body}</p>
               </div>
               <div className="process-step">
                 <span>03</span>
-                <strong>Print locally</strong>
-                <p>Pickup, local delivery, or parcel shipping from Aarhus.</p>
+                <strong>{t.upload.step3}</strong>
+                <p>{t.upload.step3Body}</p>
               </div>
             </aside>
           </div>
@@ -126,27 +172,7 @@ export default async function LocaleHome({ params }: PageProps) {
               <p>{t.products.subtitle}</p>
             </div>
           </div>
-          <div className="product-grid">
-            {products.map((product) => (
-              <article className="product-card" key={product.name}>
-                <div className="product-art">
-                  <Image
-                    alt={product.name}
-                    height={560}
-                    src={product.image}
-                    width={760}
-                  />
-                </div>
-                <div className="card-body">
-                  <h3>{product.name}</h3>
-                  <div className="meta">
-                    {product.category} · {product.leadTime}
-                  </div>
-                  <div className="price">{product.price}</div>
-                </div>
-              </article>
-            ))}
-          </div>
+          <ProductCatalog copy={t.products} locale={locale} />
         </section>
 
         <section className="section" id="materials">
@@ -175,17 +201,19 @@ export default async function LocaleHome({ params }: PageProps) {
               <h2>{t.orders.title}</h2>
             </div>
           </div>
-          <form className="status-box">
-            <input placeholder={t.orders.placeholder} type="text" />
-            <button className="button primary" type="button">
-              <Search size={18} />
-              {t.orders.action}
-            </button>
-          </form>
+          <OrderStatusLookup copy={t.orders} locale={locale} />
         </section>
 
         <footer className="footer">
-          Aarhus 3D Print · CVR pending · Local pickup, delivery, and shipping.
+          {t.footer}
+          <span className="footer-links">
+            <Link href={`/${locale}/faq` as Route}>{t.nav.faq}</Link>
+            <Link href={`/${locale}/terms` as Route}>{t.nav.terms}</Link>
+            <Link href={`/${locale}/privacy` as Route}>{t.nav.privacy}</Link>
+            <Link href={`/${locale}/cookies` as Route}>{t.nav.cookies}</Link>
+            <Link href={`/${locale}/upload-policy` as Route}>{t.nav.uploadPolicy}</Link>
+            <Link href={`/${locale}/returns` as Route}>{t.nav.returns}</Link>
+          </span>
         </footer>
       </div>
     </main>

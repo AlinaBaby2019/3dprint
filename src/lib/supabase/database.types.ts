@@ -260,6 +260,53 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          id: string
+          order_id: string
+          provider: string
+          provider_reference: string | null
+          status: string
+          amount_dkk: number
+          currency: string
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          provider: string
+          provider_reference?: string | null
+          status?: string
+          amount_dkk: number
+          currency?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          provider?: string
+          provider_reference?: string | null
+          status?: string
+          amount_dkk?: number
+          currency?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -478,6 +525,7 @@ export type Database = {
           customer_type: Database["public"]["Enums"]["customer_type"]
           cvr: string | null
           ean: string | null
+          email: string | null
           full_name: string | null
           id: string
           invoice_email: string | null
@@ -492,6 +540,7 @@ export type Database = {
           customer_type?: Database["public"]["Enums"]["customer_type"]
           cvr?: string | null
           ean?: string | null
+          email?: string | null
           full_name?: string | null
           id: string
           invoice_email?: string | null
@@ -506,6 +555,7 @@ export type Database = {
           customer_type?: Database["public"]["Enums"]["customer_type"]
           cvr?: string | null
           ean?: string | null
+          email?: string | null
           full_name?: string | null
           id?: string
           invoice_email?: string | null
@@ -714,6 +764,7 @@ export type Database = {
     }
     Functions: {
       current_user_is_admin: { Args: never; Returns: boolean }
+      set_default_address: { Args: { p_address_id: string }; Returns: void }
     }
     Enums: {
       customer_type: "private" | "business"

@@ -897,3 +897,173 @@ Upload a model, get a quote, receive locally
 7. Deploy on VPS first for flexibility, while using managed Supabase services to
    reduce operational maintenance.
 
+## 17. Implementation Progress
+
+Last updated: 2026-05-03 (session 7)
+
+### Completed
+
+- Public multilingual homepage for Danish, English, and Chinese routes.
+- Model upload form with STL browser preview, preliminary quote range, material,
+  color, quality, quantity, and delivery selections.
+- Client-side file size limit check (100 MB) before upload attempt.
+- Supabase-backed project creation and private customer file upload path
+  convention.
+- Supabase Auth sign up, sign in, sign out, and account navigation.
+- Customer address management on the account page, including saved addresses and
+  default address selection. Default address switching uses a single Postgres
+  function (`set_default_address`) to avoid a two-query race condition.
+- Customer account project history showing submitted projects, project status,
+  selected print options, preliminary estimate, and latest quote when available.
+  Projects with a `sent` quote show an accept button that triggers payment.
+- Admin dashboard at `/[locale]/admin` with `profiles.is_admin` access check,
+  incoming project queue, project file metadata, quote create/update form,
+  project/print status controls, and signed URL download for private files.
+- Admin RLS write policies for quotes and print jobs in
+  `20260502071500_admin_write_policies.sql`.
+- Admin order queue at `/[locale]/admin` showing all orders with order status
+  and delivery status controls. RLS update policies for orders and deliveries
+  added in `20260502084000_admin_order_policies.sql`.
+- Admin quote email notification: "Send quote to customer" button on the quote
+  form triggers `POST /api/admin/notify-quote`, which sends a Resend email with
+  quote amount, expiry, and expected completion to the project owner.
+- Customer quote acceptance: projects with `sent` quote status show an "Accept
+  quote & pay" button in the account page. Clicking it calls
+  `POST /api/quotes/[id]/accept` (creates order) then `POST /api/checkout`
+  (creates Stripe session) and redirects the customer to Stripe Checkout.
+- Product and material catalog display using local static assets.
+- Product cart with color selection, quantity, personalization text for
+  customizable products, local cart persistence, subtotal, and saved address
+  selection.
+- Checkout RLS write policies for `orders`, `order_items`, and `deliveries`
+  added in `20260502074000_checkout_write_policies.sql`.
+- Stripe Checkout session creation at `POST /api/checkout`. Product checkout
+  creates a Supabase order then redirects through Stripe. Requires
+  `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`.
+- Stripe webhook handler at `POST /api/webhooks/stripe` updates order status to
+  `paid` and inserts a `payments` record on `checkout.session.completed`.
+  Requires `STRIPE_WEBHOOK_SECRET`.
+- `payments` table with RLS policies in
+  `20260502083000_payments_table.sql`.
+- `print_jobs` RLS policy fixed to also cover order-owned jobs in
+  `20260502081000_fix_print_jobs_rls.sql`.
+- Quote acceptance flow: `POST /api/quotes/[id]/accept` creates order from
+  accepted quote and returns an order ID ready for Stripe checkout.
+- Order confirmation email sent on successful Stripe webhook via Resend.
+- Order status lookup on the homepage backed by live Supabase queries.
+- Checkout success page at `/[locale]/checkout/success`.
+- Legal pages at `/[locale]/terms` and `/[locale]/privacy` with full content
+  in Danish, English, and Chinese.
+- Footer links to terms and privacy on all pages.
+- Printer build volume in shared configuration (`src/lib/print-config.ts`).
+- Complete i18n coverage across all three languages for all UI sections.
+- Docker Compose deployment on the VPS using the Next.js standalone build
+  on port 3000.
+- Business customer profile fields in the account page: full name, phone,
+  customer type (private/business), company name, CVR, EAN, and invoice email.
+  Data saved to `profiles` table with existing RLS update policy.
+- Admin products management panel at `/[locale]/admin`: lists all database
+  products with slug, name, price (inline edit), and active toggle. Supports
+  adding new products with slug, name, price, and category. Implemented in
+  `src/components/admin-products.tsx`.
+- `AccountNav` label prop made optional to fix type errors in legal pages that
+  do not show navigation labels.
+- Stripe client initialization deferred to call time (`getStripe()`) to prevent
+  build-time crashes when `STRIPE_SECRET_KEY` is absent.
+- Product catalog database sync: migration
+  `20260502091000_seed_products.sql` seeds the four launch products into the
+  `products` table with multilingual names and metadata (colors, customizable,
+  lead_time, image_url). The `ProductCatalog` component now loads from Supabase
+  and falls back to static `catalog.ts` only when the DB returns no rows.
+- Admin production photo upload: admin can attach photos (JPEG/PNG/WebP) to any
+  project via the admin detail panel. Files are uploaded to the `project-files`
+  Supabase Storage bucket under the project owner's user path and recorded in
+  `project_files` with role `final_photo`. Uploaded photos appear in the project
+  file list with a signed URL download button.
+- Customer-facing production photo gallery: account page project cards show a
+  "View photos" button when `final_photo` files exist. Signed URLs are generated
+  in batch via `createSignedUrls` and rendered as thumbnail images linking to
+  full size.
+- Order status notification emails: when admin saves order status to
+  `in_production`, `ready`, or `fulfilled`, a checkbox triggers
+  `POST /api/admin/notify-order-status` which sends a localized Resend email to
+  the customer. Three email templates in Danish, English, and Chinese.
+- Admin payments view at `/[locale]/admin`: lists all payments with provider,
+  reference, amount, status, and date. Admin can mark a paid payment as
+  refunded. RLS write policy added in `20260502092000_payments_admin_write.sql`.
+- SEO `generateMetadata()` on all locale pages (account, admin, checkout/success,
+  all legal pages, faq, print, products).
+- FAQ page at `/[locale]/faq` with 8 Q&A items in Danish, English, and Chinese.
+  Navigation and footer links included.
+- Dedicated `/[locale]/print` page (wraps PrintUpload + process panel) and
+  `/[locale]/products` page (wraps ProductCatalog).
+- Account page tab navigation: Profile | Projects (N) | Addresses via `activeTab`
+  state. Status badges with i18n labels and colour coding.
+- Mobile nav: smaller font/padding at 560px breakpoint; account tabs wrap on
+  small screens. Nav active state highlighted with accent colour.
+- Unit tests via Vitest (`vitest.config.ts`, 23 tests across i18n, print-config,
+  email). E2E tests via Playwright (`playwright.config.ts`, 5 spec files).
+- Bug fix: `POST /api/quotes/[id]/accept` now inserts a `deliveries` row with
+  the correct method (`pickup_aarhus` / `local_delivery` / `shipping`) and the
+  selected `address_id`. Previously no delivery record was created, breaking
+  the admin order fulfilment view.
+- Bug fix: account panel now shows an inline address picker before accepting a
+  quote when the project delivery method is "Local delivery" or "Shipping".
+  Pickup orders proceed directly to payment. Selected `address_id` is sent to
+  the accept API and stored on the delivery record.
+- Bug fix: delivery method in project list is now shown as a localized label
+  (da/en/zh) instead of the raw English database value.
+- Bug fix: address query in account panel includes an explicit
+  `.eq("user_id", currentUserId)` filter for clarity alongside RLS.
+- Bug fix: hardcoded English "Pending" fallback in project price display replaced
+  with locale-neutral "—".
+- Nordic UI polish: h1 `line-height` adjusted from 0.98 → 1.04 for better
+  readability. Process step numbers rendered as filled accent-green circle
+  badges (28 px). Material cards have a 3 px left accent-border. Adjacent
+  `.section` blocks separated by a 1 px border-top divider.
+- i18n: five new keys added to `account` section in all three locales:
+  `deliveryPickup`, `deliveryLocal`, `deliveryShipping`, `selectAddress`,
+  `confirmAndPay`.
+
+### In Progress
+
+- Resend email integration is wired and will activate once `RESEND_API_KEY`
+  and `EMAIL_FROM` are set in the environment. Email is sent for quote
+  notifications and order confirmations. No email is sent if the key is absent.
+- Stripe integration is wired and will activate once the three Stripe
+  environment variables are set. Product checkout and quote-based checkout
+  share the same `/api/checkout` route.
+- Supabase must be linked to a dedicated project named `aarhus-3d-print`
+  before pushing migrations. Do not reuse the existing `FlexWork` project.
+
+### Admin Module Status
+
+Current status: fully implemented for MVP.
+
+Implemented:
+
+- Protected `/[locale]/admin` route gated by `profiles.is_admin`.
+- Incoming project queue with status filters and project detail view.
+- Project file metadata, quote create/update form, status controls.
+- Signed URL download for private project files.
+- Admin production photo upload (`final_photo` role, Supabase Storage).
+- Customer ↔ admin messaging with internal note support.
+- Order queue with order/delivery status controls and status notification emails.
+- Quote email notification trigger (`POST /api/admin/notify-quote`).
+- Material and color management (CRUD with multiplier and stock fields).
+- Products management (DB-backed CRUD, slug, name, price, active toggle).
+- Payments view with refund marking.
+
+### Next Planned Work
+
+- Supabase project setup: link CLI to dedicated `aarhus-3d-print` project and
+  push all migrations in `supabase/migrations/`.
+- Deploy to VPS: build Docker image, configure `.env.production`, run
+  `docker compose up`.
+- Slicer-based quote automation to replace file-size estimate.
+- Playwright browser install (`npx playwright install chromium`) and E2E run
+  against dev server.
+- CSS polish: photo grid styles, status badge styles, and checkbox-label styles
+  for the new UI elements need to be added to globals.css.
+- SEO and meta tags: `<title>` and `<meta description>` for each locale page.
+- Supabase project setup and migration push (dedicated `aarhus-3d-print` project).

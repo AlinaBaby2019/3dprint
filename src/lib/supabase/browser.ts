@@ -7,6 +7,14 @@ export function isSupabaseConfigured() {
   );
 }
 
+export function isStripeConfigured() {
+  return Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+}
+
+export function isMobilePayConfigured() {
+  return Boolean(process.env.NEXT_PUBLIC_MOBILEPAY_ENABLED === "true");
+}
+
 export function createBrowserSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
