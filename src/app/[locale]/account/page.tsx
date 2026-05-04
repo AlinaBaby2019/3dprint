@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AccountNav } from "@/components/account-nav";
 import { AccountPanel } from "@/components/account-panel";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 
 type PageProps = {
@@ -38,20 +38,15 @@ export default async function AccountPage({ params }: PageProps) {
 
   return (
     <main className="page">
-      <div className="shell">
-        <header className="topbar">
-          <Link className="brand" href={`/${locale}`}>
-            <span className="brand-mark">3D</span>
-            <span>Aarhus 3D Print</span>
-          </Link>
-          <nav className="nav" aria-label="Primary">
-            <Link href={`/${locale}`}>{t.nav.print}</Link>
-            <AccountNav label={t.nav.account} locale={locale} />
-          </nav>
-        </header>
+      <SiteHeader locale={locale} current="account" />
 
-        <AccountPanel copy={t.account} locale={locale} />
-      </div>
+      <section className="tile tile--parchment">
+        <div className="tile-inner tile-inner--wide">
+          <AccountPanel copy={t.account} locale={locale} />
+        </div>
+      </section>
+
+      <SiteFooter locale={locale} />
     </main>
   );
 }

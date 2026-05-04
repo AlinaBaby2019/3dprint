@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import type { Route } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { notFound } from "next/navigation";
-import { AccountNav } from "@/components/account-nav";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 
 type PageProps = {
@@ -32,36 +33,27 @@ export default async function CheckoutSuccessPage({ params }: PageProps) {
 
   return (
     <main className="page">
-      <div className="shell">
-        <header className="topbar">
-          <Link className="brand" href={`/${locale}`}>
-            <span className="brand-mark">3D</span>
-            <span>Aarhus 3D Print</span>
-          </Link>
-          <nav className="nav" aria-label="Primary">
-            <Link href={`/${locale}`}>{t.nav.print}</Link>
-            <AccountNav label={t.nav.account} locale={locale} />
-          </nav>
-        </header>
+      <SiteHeader locale={locale} />
 
-        <section className="section" style={{ textAlign: "center", paddingTop: "80px" }}>
-          <CheckCircle2 size={52} style={{ color: "var(--accent)", marginBottom: "24px" }} />
-          <h1>{t.checkout.successTitle}</h1>
-          <p style={{ color: "var(--muted)", maxWidth: "480px", margin: "0 auto 32px" }}>
-            {t.checkout.successBody}
-          </p>
+      <section className="tile">
+        <div className="tile-inner">
+          <div className="tile-head tile-head--center">
+            <CheckCircle2 className="checkout-success-icon" size={56} />
+            <h1 className="t-display-lg">{t.checkout.successTitle}</h1>
+            <p className="t-lead-airy">{t.checkout.successBody}</p>
+          </div>
           <div className="actions" style={{ justifyContent: "center" }}>
-            <Link className="button primary" href={`/${locale}#orders` as Route}>
+            <Link className="btn btn--primary" href={`/${locale}#orders` as Route}>
               {t.checkout.viewOrders}
             </Link>
-            <Link className="button secondary" href={`/${locale}` as Route}>
+            <Link className="btn btn--secondary" href={`/${locale}` as Route}>
               {t.checkout.backHome}
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <footer className="footer">{t.footer}</footer>
-      </div>
+      <SiteFooter locale={locale} />
     </main>
   );
 }

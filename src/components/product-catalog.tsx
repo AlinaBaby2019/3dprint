@@ -475,7 +475,7 @@ export function ProductCatalog({ copy, locale }: { copy: ProductCatalogCopy; loc
                 )}
               </div>
 
-              <button className="button primary wide" type="submit">
+              <button className="btn btn--primary wide" type="submit">
                 <ShoppingCart size={18} />
                 {copy.addToCart}
               </button>
@@ -558,7 +558,7 @@ export function ProductCatalog({ copy, locale }: { copy: ProductCatalogCopy; loc
         </label>
 
         <button
-          className="button primary wide"
+          className="btn btn--primary wide"
           disabled={cart.length === 0 || checkoutBusy}
           onClick={() => void createOrder()}
           type="button"
@@ -567,7 +567,7 @@ export function ProductCatalog({ copy, locale }: { copy: ProductCatalogCopy; loc
         </button>
         {isMobilePayConfigured() && (
           <button
-            className="button mobilepay-button wide"
+            className="btn mobilepay-button wide"
             disabled={cart.length === 0 || checkoutBusy}
             onClick={() => void createMobilePayOrder()}
             type="button"

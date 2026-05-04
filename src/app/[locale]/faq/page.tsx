@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Route } from "next";
 import { notFound } from "next/navigation";
-import { AccountNav } from "@/components/account-nav";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 
 type PageProps = {
@@ -37,67 +38,42 @@ export default async function FaqPage({ params }: PageProps) {
 
   return (
     <main className="page">
-      <div className="shell">
-        <header className="topbar">
-          <Link className="brand" href={`/${locale}` as Route}>
-            <span className="brand-mark">3D</span>
-            <span>Aarhus 3D Print</span>
-          </Link>
-          <nav className="nav" aria-label="Primary">
-            <Link href={`/${locale}/print` as Route}>{t.nav.print}</Link>
-            <Link href={`/${locale}/products` as Route}>{t.nav.products}</Link>
-            <Link href={`/${locale}/faq` as Route} aria-current="page">{t.nav.faq}</Link>
-            <AccountNav label={t.nav.account} locale={locale} />
-            <span className="language-switch" aria-label="Language">
-              {locales.map((item) => (
-                <Link
-                  aria-current={item === locale ? "page" : undefined}
-                  href={`/${item}/faq` as Route}
-                  key={item}
-                >
-                  {item.toUpperCase()}
-                </Link>
-              ))}
-            </span>
-          </nav>
-        </header>
+      <SiteHeader locale={locale} current="faq" />
 
-        <section className="section">
-          <div className="section-head">
-            <div>
-              <h1>{t.faq.title}</h1>
-              <p>{t.faq.subtitle}</p>
-            </div>
+      {/* Hero — canvas */}
+      <section className="tile">
+        <div className="tile-inner">
+          <div className="tile-head tile-head--center">
+            <h1 className="t-hero-display">{t.faq.title}</h1>
+            <p className="t-lead-airy">{t.faq.subtitle}</p>
           </div>
+        </div>
+      </section>
 
+      {/* FAQ list — parchment */}
+      <section className="tile tile--parchment">
+        <div className="tile-inner">
           <div className="faq-list">
             {t.faq.items.map((item, i) => (
-              <article className="faq-item panel" key={i}>
+              <article className="faq-item" key={i}>
                 <h2 className="faq-question">{item.q}</h2>
                 <p className="faq-answer">{item.a}</p>
               </article>
             ))}
           </div>
 
-          <div style={{ marginTop: "48px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
-            <Link className="button primary" href={`/${locale}/print` as Route}>
+          <div className="actions" style={{ marginTop: "var(--space-xxl)" }}>
+            <Link className="btn btn--primary" href={`/${locale}/print` as Route}>
               {t.nav.print}
             </Link>
-            <Link className="button secondary" href={`/${locale}/products` as Route}>
+            <Link className="btn btn--secondary" href={`/${locale}/products` as Route}>
               {t.nav.products}
             </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <footer className="footer">
-          {t.footer}
-          <span className="footer-links">
-            <Link href={`/${locale}/terms` as Route}>{t.nav.terms}</Link>
-            <Link href={`/${locale}/privacy` as Route}>{t.nav.privacy}</Link>
-            <Link href={`/${locale}/faq` as Route}>{t.nav.faq}</Link>
-          </span>
-        </footer>
-      </div>
+      <SiteFooter locale={locale} />
     </main>
   );
 }

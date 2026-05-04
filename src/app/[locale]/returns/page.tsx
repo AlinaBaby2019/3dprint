@@ -1,9 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import type { Route } from "next";
 import { notFound } from "next/navigation";
-import { AccountNav } from "@/components/account-nav";
-import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { isLocale, locales, type Locale } from "@/lib/i18n";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -114,35 +113,23 @@ export default async function ReturnsPage({ params }: PageProps) {
   const { locale: rawLocale } = await params;
   if (!isLocale(rawLocale)) notFound();
   const locale: Locale = rawLocale;
-  const t = getDictionary(locale);
   const page = content[locale];
 
   return (
     <main className="page">
-      <div className="shell">
-        <nav className="top-nav">
-          <AccountNav locale={locale} />
-        </nav>
-        <article className="legal-page">
-          <h1>{page.title}</h1>
-          {page.sections.map((section) => (
-            <section key={section.heading}>
-              <h2>{section.heading}</h2>
-              <p>{section.body}</p>
-            </section>
-          ))}
-          <footer className="footer">
-            {t.footer}
-            <span className="footer-links">
-              <Link href={`/${locale}/terms` as Route}>{t.nav.terms}</Link>
-              <Link href={`/${locale}/privacy` as Route}>{t.nav.privacy}</Link>
-              <Link href={`/${locale}/cookies` as Route}>{t.nav.cookies}</Link>
-              <Link href={`/${locale}/upload-policy` as Route}>{t.nav.uploadPolicy}</Link>
-              <Link href={`/${locale}/returns` as Route}>{t.nav.returns}</Link>
-            </span>
-          </footer>
-        </article>
-      </div>
+      <SiteHeader locale={locale} />
+
+      <article className="legal-page">
+        <h1>{page.title}</h1>
+        {page.sections.map((section) => (
+          <section key={section.heading}>
+            <h2>{section.heading}</h2>
+            <p>{section.body}</p>
+          </section>
+        ))}
+      </article>
+
+      <SiteFooter locale={locale} />
     </main>
   );
 }

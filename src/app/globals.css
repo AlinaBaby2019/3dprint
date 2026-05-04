@@ -375,6 +375,13 @@ img { max-width: 100%; }
   margin-top: 32px;
 }
 
+/* Checkout success icon */
+.checkout-success-icon {
+  color: var(--accent);
+  display: block;
+  margin: 0 auto 8px;
+}
+
 @media (max-width: 833px) {
   .tile { padding: 56px 20px; }
 }

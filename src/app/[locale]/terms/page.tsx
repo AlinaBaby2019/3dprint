@@ -1,9 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import type { Route } from "next";
 import { notFound } from "next/navigation";
-import { AccountNav } from "@/components/account-nav";
-import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { isLocale, locales, type Locale } from "@/lib/i18n";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
@@ -130,44 +129,23 @@ export default async function TermsPage({ params }: PageProps) {
   }
 
   const locale: Locale = rawLocale;
-  const t = getDictionary(locale);
   const page = content[locale];
 
   return (
     <main className="page">
-      <div className="shell">
-        <header className="topbar">
-          <Link className="brand" href={`/${locale}`}>
-            <span className="brand-mark">3D</span>
-            <span>Aarhus 3D Print</span>
-          </Link>
-          <nav className="nav" aria-label="Primary">
-            <Link href={`/${locale}`}>{t.nav.print}</Link>
-            <AccountNav label={t.nav.account} locale={locale} />
-          </nav>
-        </header>
+      <SiteHeader locale={locale} />
 
-        <article className="legal-page">
-          <h1>{page.title}</h1>
-          {page.sections.map((section) => (
-            <section key={section.heading}>
-              <h2>{section.heading}</h2>
-              <p>{section.body}</p>
-            </section>
-          ))}
-        </article>
+      <article className="legal-page">
+        <h1>{page.title}</h1>
+        {page.sections.map((section) => (
+          <section key={section.heading}>
+            <h2>{section.heading}</h2>
+            <p>{section.body}</p>
+          </section>
+        ))}
+      </article>
 
-        <footer className="footer">
-          {t.footer}
-          <span className="footer-links">
-            <Link href={`/${locale}/terms` as Route}>{t.nav.terms}</Link>
-            <Link href={`/${locale}/privacy` as Route}>{t.nav.privacy}</Link>
-            <Link href={`/${locale}/cookies` as Route}>{t.nav.cookies}</Link>
-            <Link href={`/${locale}/upload-policy` as Route}>{t.nav.uploadPolicy}</Link>
-            <Link href={`/${locale}/returns` as Route}>{t.nav.returns}</Link>
-          </span>
-        </footer>
-      </div>
+      <SiteFooter locale={locale} />
     </main>
   );
 }
