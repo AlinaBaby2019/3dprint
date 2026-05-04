@@ -928,21 +928,66 @@ AI modeling provider
 
 ## 16. Design Direction
 
-The frontend should use a Nordic minimalist style:
+As of session 9 (2026-05-04) the entire frontend was re-skinned to Apple's
+design language, replacing the original Nordic earthy palette. The
+authoritative reference is `awesome-design-md/apple/DESIGN.md`. Key rules:
 
-- Quiet neutral background
-- Clear typography
-- Muted colors with restrained accents
-- Practical workflow-first layout
-- Dense but readable admin screens
-- No decorative-heavy landing page
-- Product and print workflows visible immediately
+- **Single accent**: Action Blue `#0066cc` for every interactive signal.
+  No secondary brand colour. Sky Link Blue `#2997ff` is permitted only on
+  dark tiles for contrast.
+- **Surfaces**: white canvas `#ffffff`, parchment `#f5f5f7`, dark tile
+  `#272729`. Tiles alternate to provide rhythm; the colour change *is* the
+  divider — no horizontal rules between tiles.
+- **Typography**: system font stack (`-apple-system`, `BlinkMacSystemFont`,
+  `SF Pro Display` / `SF Pro Text`, then `system-ui`) with a Chinese
+  fallback (`PingFang SC`, `Hiragino Sans GB`, `Microsoft YaHei`) on
+  `:lang(zh)`. Body text is 17 px / line-height 1.47 / letter-spacing
+  −0.022 em. Display weights are 600; weight 500 is deliberately absent;
+  weight 300 is reserved for `lead-airy` moments. Utility classes
+  `.t-hero-display` … `.t-fine-print` carry the full ladder.
+- **Spacing**: 8 px base scale (`--space-xxs` 4 px through
+  `--space-section` 80 px). Tiles use 80 px vertical padding on desktop,
+  56 px on tablet, 48 px on mobile.
+- **Radius**: pill (9999 px) for primary CTAs, 18 px for utility cards,
+  11 px for inputs and pearl capsules, 8 px for compact dark utility
+  buttons.
+- **Shadow**: exactly one — `--shadow-product` — and only on photographic
+  product renders (homepage hero image, configurator STL preview wrapper).
+  Cards, buttons, badges, and forms are flat with hairline borders.
+- **Active state**: `transform: scale(0.95)` system-wide on every button
+  and chip.
 
-The main screen should make the service clear in the first viewport:
+Page composition:
+
+- **Public pages** (homepage, `/print`, `/products`, `/faq`, `/checkout/
+  success`, 5 legal pages): full-bleed `<section className="tile">`
+  stack alternating canvas / parchment / dark, contained inside
+  `.tile-inner` (980 px) or `.tile-inner--wide` (1440 px).
+- **Admin page**: contained `.shell--wide` (1440 px) without tiles —
+  internal-facing UIs use the denser variant per Apple's "compact utility
+  rectangle" grammar.
+
+Shared chrome:
+
+- `<SiteHeader>` renders `.global-nav` — black 44 px bar with brand,
+  primary nav (Print / Products / FAQ), `<AccountNav>` slot, and locale
+  switch. Collapses to brand + util at ≤ 833 px.
+- `<SiteFooter>` renders `.site-footer` — parchment background with
+  three column groupings (Products / Account / Legal) and a hairline
+  legal row.
+- `<LocaleLangSync>` is a tiny client component mounted in
+  `src/app/[locale]/layout.tsx` that updates `document.documentElement.lang`
+  to match the route. The root layout still renders `<html lang="da">`
+  because Next.js 15 requires it — the client sync corrects it after
+  hydration without touching SEO-critical first paint.
+
+The homepage's first viewport now reads:
 
 ```text
-Local 3D printing in Aarhus
-Upload a model, get a quote, receive locally
+Lokal 3D print i Aarhus  ←  hero (white canvas, 56 px display)
+Upload din model, vælg materiale og få et hurtigt prisestimat
+[Start din print]  [Se produkter]
+        [3D render with --shadow-product]
 ```
 
 ## 17. Key Technical Decisions
@@ -958,7 +1003,65 @@ Upload a model, get a quote, receive locally
 
 ## 18. Implementation Progress
 
-Last updated: 2026-05-03 (session 8)
+Last updated: 2026-05-04 (session 9)
+
+### Session 9 (2026-05-04) — Apple UI redesign, full site
+
+Re-skinned every public route plus the admin page from the original Nordic
+earthy palette to Apple's design language. Five sequential PRs, each
+committed and deployed via Docker rebuild on the same VPS:
+
+- **PR 1 — Foundation** (`4201c72`): rewrote `src/app/globals.css` (1880 lines
+  → ~1900 lines) replacing the token layer with Apple's palette, system
+  font stack, 8 px spacing, typography utility classes (`.t-hero-display`
+  through `.t-fine-print`), and new component primitives (`.tile`,
+  `.btn--primary/secondary/dark-utility/pearl/store-hero/icon`,
+  `.global-nav`, `.sub-nav`, `.utility-card`, `.config-chip`, `.sticky-bar`,
+  `.site-footer`). All existing legacy classes (`.button.primary`, `.panel`,
+  `.field`, `.status-badge.*`, `.message-bubble`, `.admin-table`,
+  `.order-table`, …) restyled in place so unchanged markup keeps working.
+  Created `src/components/site-header.tsx` and `src/components/
+  site-footer.tsx` as ready-to-mount shared chrome. Created
+  `src/app/[locale]/layout.tsx` and `src/components/locale-lang-sync.tsx`
+  to set `<html lang>` per locale.
+- **PR 2 — Homepage** (`1374d24`): restructured `src/app/[locale]/page.tsx`
+  from a 1180 px contained shell into six full-bleed tiles alternating
+  canvas → parchment → canvas → parchment → dark → canvas: hero, print
+  upload, products, materials, "Local production" dark banner, order
+  status lookup. Mounted `<SiteHeader>` and `<SiteFooter>`. `<OrderStatus
+  Lookup>` button switched to `.btn--primary`.
+- **PR 3 — Print upload** (`3b1cbb2`): converted PrintUpload's material /
+  color / quality / delivery `<select>` dropdowns into `.config-chip` pill
+  groups (4 groups, 17 chips, 2 px accent ring on selected, delivery chips
+  show price suffix). Heading typography moved to `.t-display-md` /
+  `.t-lead-airy`. Buttons migrated to `.btn--*`. Dropped the `.panel`
+  wrapper so the configurator sits flat on the parchment tile. Wrapped
+  `/[locale]/print` in `<SiteHeader current="print">` + centered hero
+  tile + parchment configurator tile + `<SiteFooter>`.
+- **PR 4 — Products, account, FAQ, legal, checkout success** (`074be08`):
+  replaced inline `topbar`/`footer` with shared chrome on
+  `/[locale]/products`, `/account`, `/faq`, `/checkout/success`, and the
+  five legal pages (`terms`, `privacy`, `cookies`, `returns`,
+  `upload-policy`) — net −138 LOC. ProductCatalog's three primary CTAs
+  switched to `.btn--primary wide`. AccountPanel's 12 buttons keep the
+  `.button` class names because PR 1's CSS aliases them to `.btn` (zero
+  visual diff).
+- **PR 5 — Admin** (`ca9f755`): wrapped `/[locale]/admin` in
+  `<SiteHeader current="admin">` + `.shell.shell--wide` (1440 px) +
+  `<SiteFooter>`. The five admin sub-components (AdminPanel, AdminOrders,
+  AdminMaterials, AdminProducts, AdminPayments) and their internals
+  (admin-grid, admin-table, admin-form, message-bubble, status-badge)
+  inherited the Apple flat treatment from PR 1's CSS rewrite — no
+  component-level changes needed.
+
+Verification on every PR: `tsc --noEmit` clean, ESLint 0 warnings,
+`npm run build` green for all 49 routes, Vitest 23/23. Each PR shipped
+independently — no half-styled state — by running `git commit && git push
+&& docker compose --env-file .env.production up -d --build` on the same
+VPS that hosts production. Health check `GET /api/health` confirmed
+healthy after each rebuild.
+
+Last updated before this session: 2026-05-03 (session 8)
 
 ### Completed
 
