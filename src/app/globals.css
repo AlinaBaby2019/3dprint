@@ -382,6 +382,11 @@ img { max-width: 100%; }
   margin: 0 auto 8px;
 }
 
+/* Admin page wrapper — flat parchment-tinted background, contained 1440px shell */
+.admin-shell {
+  padding-bottom: var(--space-xxl);
+}
+
 @media (max-width: 833px) {
   .tile { padding: 56px 20px; }
 }

@@ -1,12 +1,12 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AccountNav } from "@/components/account-nav";
 import { AdminPanel } from "@/components/admin-panel";
 import { AdminOrders } from "@/components/admin-orders";
 import { AdminMaterials } from "@/components/admin-materials";
 import { AdminProducts } from "@/components/admin-products";
 import { AdminPayments } from "@/components/admin-payments";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 
 type PageProps = {
@@ -34,24 +34,17 @@ export default async function AdminPage({ params }: PageProps) {
 
   return (
     <main className="page">
-      <div className="shell">
-        <header className="topbar">
-          <Link className="brand" href={`/${locale}`}>
-            <span className="brand-mark">3D</span>
-            <span>Aarhus 3D Print</span>
-          </Link>
-          <nav className="nav" aria-label="Primary">
-            <Link href={`/${locale}`}>{t.nav.print}</Link>
-            <AccountNav label={t.nav.account} locale={locale} />
-          </nav>
-        </header>
+      <SiteHeader locale={locale} current="admin" />
 
+      <div className="shell shell--wide admin-shell">
         <AdminPanel copy={t.admin} locale={locale} />
         <AdminOrders copy={t.admin} locale={locale} />
         <AdminMaterials copy={{ ...t.admin, saved: t.admin.messageSaved, error: t.admin.messageError }} />
         <AdminProducts copy={{ ...t.admin, saved: t.admin.messageSaved, error: t.admin.messageError }} />
         <AdminPayments copy={t.admin} />
       </div>
+
+      <SiteFooter locale={locale} />
     </main>
   );
 }
