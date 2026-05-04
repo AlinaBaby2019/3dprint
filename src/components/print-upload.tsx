@@ -379,7 +379,7 @@ export function PrintUpload({ copy, locale }: { copy: UploadCopy; locale: string
 
   if (submittedProjectId) {
     return (
-      <section className="panel upload-panel">
+      <section className="upload-panel">
         <div className="submit-success">
           <CheckCircle2 size={40} className={fileUploadFailed ? "icon-warning" : "icon-success"} />
           <div>
@@ -393,10 +393,10 @@ export function PrintUpload({ copy, locale }: { copy: UploadCopy; locale: string
             )}
           </div>
           <div className="upload-actions">
-            <Link className="button primary" href={`/${locale}/account`}>
+            <Link className="btn btn--primary" href={`/${locale}/account`}>
               {copy.submitViewAccount}
             </Link>
-            <button className="button secondary" onClick={resetForm} type="button">
+            <button className="btn btn--secondary" onClick={resetForm} type="button">
               {copy.submit}
             </button>
           </div>
@@ -405,10 +405,39 @@ export function PrintUpload({ copy, locale }: { copy: UploadCopy; locale: string
     );
   }
 
+  const materialOptions = ["PLA", "PETG", "ASA", "TPU"];
+  const colorOptions = ["Black", "White", "Grey", "Custom color"];
+  const qualityOptions = ["Draft", "Standard", "Fine"];
+  const deliveryOptions: { id: string; price: number }[] = [
+    { id: "Pickup", price: deliveryPrices.Pickup },
+    { id: "Local delivery", price: deliveryPrices["Local delivery"] },
+    { id: "Shipping", price: deliveryPrices.Shipping }
+  ];
+
+  const renderChip = (
+    value: string,
+    selected: string,
+    onSelect: (v: string) => void,
+    suffix?: string
+  ) => (
+    <button
+      aria-pressed={selected === value}
+      className="config-chip"
+      key={value}
+      onClick={() => onSelect(value)}
+      type="button"
+    >
+      <span>{value}</span>
+      {suffix && <span className="config-chip__price">{suffix}</span>}
+    </button>
+  );
+
   return (
-    <section className="panel upload-panel">
-      <h2>{copy.title}</h2>
-      <p>{copy.description}</p>
+    <section className="upload-panel">
+      <header className="upload-panel-head">
+        <h2 className="t-display-md">{copy.title}</h2>
+        <p className="t-lead-airy">{copy.description}</p>
+      </header>
 
       <label
         className="dropzone interactive"
@@ -461,50 +490,48 @@ export function PrintUpload({ copy, locale }: { copy: UploadCopy; locale: string
         </div>
       </div>
 
-      <div className="form-grid">
-        <label className="field">
-          <span>{copy.material}</span>
-          <select value={material} onChange={(event) => setMaterial(event.target.value)}>
-            <option>PLA</option>
-            <option>PETG</option>
-            <option>ASA</option>
-            <option>TPU</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>{copy.color}</span>
-          <select value={color} onChange={(event) => setColor(event.target.value)}>
-            <option>Black</option>
-            <option>White</option>
-            <option>Grey</option>
-            <option>Custom color</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>{copy.quality}</span>
-          <select value={quality} onChange={(event) => setQuality(event.target.value)}>
-            <option>Draft</option>
-            <option>Standard</option>
-            <option>Fine</option>
-          </select>
-        </label>
-        <label className="field">
-          <span>{copy.quantity}</span>
-          <input
-            min="1"
-            onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
-            type="number"
-            value={quantity}
-          />
-        </label>
-        <label className="field full">
-          <span>{copy.delivery}</span>
-          <select value={delivery} onChange={(event) => setDelivery(event.target.value)}>
-            <option>Pickup</option>
-            <option>Local delivery</option>
-            <option>Shipping</option>
-          </select>
-        </label>
+      <div className="configurator">
+        <fieldset className="chip-group">
+          <legend>{copy.material}</legend>
+          <div className="chip-row">
+            {materialOptions.map((opt) => renderChip(opt, material, setMaterial))}
+          </div>
+        </fieldset>
+
+        <fieldset className="chip-group">
+          <legend>{copy.color}</legend>
+          <div className="chip-row">
+            {colorOptions.map((opt) => renderChip(opt, color, setColor))}
+          </div>
+        </fieldset>
+
+        <fieldset className="chip-group">
+          <legend>{copy.quality}</legend>
+          <div className="chip-row">
+            {qualityOptions.map((opt) => renderChip(opt, quality, setQuality))}
+          </div>
+        </fieldset>
+
+        <div className="quantity-row">
+          <label className="field">
+            <span>{copy.quantity}</span>
+            <input
+              min="1"
+              onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
+              type="number"
+              value={quantity}
+            />
+          </label>
+        </div>
+
+        <fieldset className="chip-group">
+          <legend>{copy.delivery}</legend>
+          <div className="chip-row">
+            {deliveryOptions.map(({ id, price }) =>
+              renderChip(id, delivery, setDelivery, price === 0 ? "Free" : `+${price} DKK`)
+            )}
+          </div>
+        </fieldset>
       </div>
 
       <div className="estimate">
@@ -516,7 +543,7 @@ export function PrintUpload({ copy, locale }: { copy: UploadCopy; locale: string
 
       <div className="upload-actions">
         <button
-          className="button secondary"
+          className="btn btn--secondary"
           onClick={() => {
             if (file) {
               void renderPreview(file);
@@ -527,7 +554,7 @@ export function PrintUpload({ copy, locale }: { copy: UploadCopy; locale: string
           <RotateCcw size={18} />
           Refresh preview
         </button>
-        <button className="button primary" onClick={submitForReview} type="button">
+        <button className="btn btn--primary" onClick={submitForReview} type="button">
           <Send size={18} />
           {submitting ? "Sending..." : copy.submit}
         </button>

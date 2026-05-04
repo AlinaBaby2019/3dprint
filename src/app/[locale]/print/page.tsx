@@ -1,9 +1,8 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import type { Route } from "next";
 import { notFound } from "next/navigation";
-import { AccountNav } from "@/components/account-nav";
 import { PrintUpload } from "@/components/print-upload";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 
 type PageProps = {
@@ -53,43 +52,25 @@ export default async function PrintPage({ params }: PageProps) {
 
   return (
     <main className="page">
-      <div className="shell">
-        <header className="topbar">
-          <Link className="brand" href={`/${locale}` as Route}>
-            <span className="brand-mark">3D</span>
-            <span>Aarhus 3D Print</span>
-          </Link>
-          <nav className="nav" aria-label="Primary">
-            <Link href={`/${locale}/print` as Route} aria-current="page">{t.nav.print}</Link>
-            <Link href={`/${locale}/products` as Route}>{t.nav.products}</Link>
-            <Link href={`/${locale}/faq` as Route}>{t.nav.faq}</Link>
-            <AccountNav label={t.nav.account} locale={locale} />
-            <span className="language-switch" aria-label="Language">
-              {locales.map((item) => (
-                <Link
-                  aria-current={item === locale ? "page" : undefined}
-                  href={`/${item}/print` as Route}
-                  key={item}
-                >
-                  {item.toUpperCase()}
-                </Link>
-              ))}
-            </span>
-          </nav>
-        </header>
+      <SiteHeader locale={locale} current="print" />
 
-        <section className="section print-section">
-          <div className="section-head">
-            <div>
-              <h1>{t.upload.title}</h1>
-              <p>{t.upload.description}</p>
-            </div>
+      {/* Hero — canvas */}
+      <section className="tile">
+        <div className="tile-inner">
+          <div className="tile-head tile-head--center">
+            <h1 className="t-hero-display">{t.upload.title}</h1>
+            <p className="t-lead-airy">{t.upload.description}</p>
           </div>
+        </div>
+      </section>
 
+      {/* Configurator — parchment */}
+      <section className="tile tile--parchment">
+        <div className="tile-inner tile-inner--wide">
           <div className="print-layout">
             <PrintUpload copy={t.upload} locale={locale} />
 
-            <aside className="panel process-panel">
+            <aside className="process-panel">
               <div className="process-step">
                 <span>01</span>
                 <strong>{t.upload.step1}</strong>
@@ -107,18 +88,10 @@ export default async function PrintPage({ params }: PageProps) {
               </div>
             </aside>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <footer className="footer">
-          {t.footer}
-          <span className="footer-links">
-            <Link href={`/${locale}/terms` as Route}>{t.nav.terms}</Link>
-            <Link href={`/${locale}/privacy` as Route}>{t.nav.privacy}</Link>
-            <Link href={`/${locale}/upload-policy` as Route}>{t.nav.uploadPolicy}</Link>
-            <Link href={`/${locale}/faq` as Route}>{t.nav.faq}</Link>
-          </span>
-        </footer>
-      </div>
+      <SiteFooter locale={locale} />
     </main>
   );
 }

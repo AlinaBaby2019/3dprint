@@ -715,6 +715,57 @@ img { max-width: 100%; }
   padding: 11px 15px;
 }
 
+.config-chip__price {
+  color: var(--ink-muted-48);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  margin-left: 6px;
+}
+.config-chip[aria-pressed="true"] .config-chip__price { color: var(--accent-focus); }
+
+/* Configurator (PrintUpload) */
+.upload-panel-head {
+  display: grid;
+  gap: 12px;
+  margin-bottom: var(--space-xl);
+}
+
+.configurator {
+  display: grid;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.chip-group {
+  border: 0;
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+.chip-group legend {
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  padding: 0;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.quantity-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 180px 1fr;
+}
+@media (max-width: 640px) {
+  .quantity-row { grid-template-columns: 1fr; }
+}
+
 /* Floating sticky bar (configurator) */
 .sticky-bar {
   align-items: center;
