@@ -112,7 +112,7 @@ export function OrderStatusLookup({ copy, locale }: { copy: OrderStatusCopy; loc
           type="text"
           value={query}
         />
-        <button className="button primary" disabled={loading} type="submit">
+        <button className="btn btn--primary" disabled={loading} type="submit">
           <Search size={18} />
           {copy.action}
         </button>

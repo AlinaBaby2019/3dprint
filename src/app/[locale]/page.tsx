@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import type { Route } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { PackageCheck, Upload } from "lucide-react";
-import { AccountNav } from "@/components/account-nav";
+import { ArrowRight, PackageCheck, Upload } from "lucide-react";
 import { OrderStatusLookup } from "@/components/order-status-lookup";
 import { PrintUpload } from "@/components/print-upload";
 import { ProductCatalog } from "@/components/product-catalog";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { getDictionary, isLocale, locales, type Locale } from "@/lib/i18n";
 import { materials } from "@/lib/catalog";
 
@@ -72,80 +73,58 @@ export default async function LocaleHome({ params }: PageProps) {
 
   return (
     <main className="page">
-      <div className="shell">
-        <header className="topbar">
-          <Link className="brand" href={`/${locale}`}>
-            <span className="brand-mark">3D</span>
-            <span>Aarhus 3D Print</span>
-          </Link>
+      <SiteHeader locale={locale} />
 
-          <nav className="nav" aria-label="Primary">
-            <Link href={`/${locale}/print` as Route}>{t.nav.print}</Link>
-            <Link href={`/${locale}/products` as Route}>{t.nav.products}</Link>
-            <a href="#materials">{t.nav.materials}</a>
-            <a href="#orders">{t.nav.orders}</a>
-            <Link href={`/${locale}/faq` as Route}>{t.nav.faq}</Link>
-            <AccountNav label={t.nav.account} locale={locale} />
-            <span className="language-switch" aria-label="Language">
-              {locales.map((item) => (
-                <Link
-                  aria-current={item === locale ? "page" : undefined}
-                  href={`/${item}`}
-                  key={item}
-                >
-                  {item.toUpperCase()}
-                </Link>
-              ))}
-            </span>
-          </nav>
-        </header>
-
-        <section className="hero">
-          <div>
-            <p className="eyebrow">{t.hero.eyebrow}</p>
-            <h1>{t.hero.title}</h1>
-            <p className="hero-copy">{t.hero.subtitle}</p>
-            <div className="actions">
-              <a className="button primary" href="#print">
-                <Upload size={18} />
-                {t.hero.primary}
-              </a>
-              <a className="button secondary" href="#products">
-                <PackageCheck size={18} />
-                {t.hero.secondary}
-              </a>
-            </div>
-          </div>
-
-          <div className="hero-visual">
-            <Image
-              alt="3D printer producing a practical part"
-              className="hero-image"
-              height={850}
-              priority
-              src="/images/hero-3d-print.png"
-              width={1200}
-            />
-            <div className="hero-facts" aria-label="Service highlights">
-              <span>{t.hero.factQuote}</span>
-              <span>{t.hero.factPickup}</span>
-              <span>{t.hero.factMaterials}</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="section print-section" id="print">
-          <div className="section-head">
+      {/* Hero — canvas, full-bleed */}
+      <section className="tile">
+        <div className="tile-inner tile-inner--wide">
+          <div className="hero-grid">
             <div>
-              <h2>{t.upload.title}</h2>
-              <p>{t.upload.description}</p>
+              <p className="hero-eyebrow">{t.hero.eyebrow}</p>
+              <h1 className="t-hero-display">{t.hero.title}</h1>
+              <p className="t-lead-airy hero-subtitle">{t.hero.subtitle}</p>
+              <div className="actions">
+                <Link className="btn btn--primary" href={`/${locale}/print` as Route}>
+                  <Upload size={18} />
+                  {t.hero.primary}
+                </Link>
+                <Link className="btn btn--secondary" href={`/${locale}/products` as Route}>
+                  <PackageCheck size={18} />
+                  {t.hero.secondary}
+                </Link>
+              </div>
             </div>
+
+            <figure className="hero-figure">
+              <Image
+                alt="3D printer producing a practical part"
+                height={850}
+                priority
+                src="/images/hero-3d-print.png"
+                width={1200}
+              />
+              <figcaption className="hero-facts" aria-label="Service highlights">
+                <span>{t.hero.factQuote}</span>
+                <span>{t.hero.factPickup}</span>
+                <span>{t.hero.factMaterials}</span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      {/* Print upload — parchment */}
+      <section className="tile tile--parchment" id="print">
+        <div className="tile-inner tile-inner--wide">
+          <div className="tile-head">
+            <h2 className="t-display-md">{t.upload.title}</h2>
+            <p className="t-lead-airy">{t.upload.description}</p>
           </div>
 
           <div className="print-layout">
             <PrintUpload copy={t.upload} locale={locale} />
 
-            <aside className="panel process-panel">
+            <aside className="process-panel">
               <div className="process-step">
                 <span>01</span>
                 <strong>{t.upload.step1}</strong>
@@ -163,59 +142,65 @@ export default async function LocaleHome({ params }: PageProps) {
               </div>
             </aside>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="section" id="products">
-          <div className="section-head">
-            <div>
-              <h2>{t.products.title}</h2>
-              <p>{t.products.subtitle}</p>
-            </div>
+      {/* Products — canvas */}
+      <section className="tile" id="products">
+        <div className="tile-inner tile-inner--wide">
+          <div className="tile-head">
+            <h2 className="t-display-md">{t.products.title}</h2>
+            <p className="t-lead-airy">{t.products.subtitle}</p>
           </div>
           <ProductCatalog copy={t.products} locale={locale} />
-        </section>
+        </div>
+      </section>
 
-        <section className="section" id="materials">
-          <div className="section-head">
-            <div>
-              <h2>{t.materials.title}</h2>
-              <p>{t.materials.subtitle}</p>
-            </div>
+      {/* Materials — parchment */}
+      <section className="tile tile--parchment" id="materials">
+        <div className="tile-inner">
+          <div className="tile-head">
+            <h2 className="t-display-md">{t.materials.title}</h2>
+            <p className="t-lead-airy">{t.materials.subtitle}</p>
           </div>
-          <div className="material-grid">
+
+          <div className="material-grid--apple">
             {materials.map((material) => (
-              <article className="material-card" key={material.name}>
-                <div className="card-body">
-                  <h3>{material.name}</h3>
-                  <p>{material.use}</p>
-                  <div className="meta">{material.stock}</div>
-                </div>
+              <article className="utility-card" key={material.name}>
+                <h3>{material.name}</h3>
+                <p>{material.use}</p>
+                <p className="stock">{material.stock}</p>
               </article>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="section" id="orders">
-          <div className="section-head">
-            <div>
-              <h2>{t.orders.title}</h2>
-            </div>
+      {/* Local production — dark */}
+      <section className="tile tile--dark">
+        <div className="tile-inner banner-dark">
+          <h2 className="t-display-lg">{t.upload.step3}</h2>
+          <p className="t-lead-airy">{t.upload.step3Body}</p>
+          <div className="actions">
+            <Link className="btn btn--primary" href={`/${locale}/print` as Route}>
+              {t.hero.primary}
+              <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Order status lookup — canvas */}
+      <section className="tile" id="orders">
+        <div className="tile-inner">
+          <div className="tile-head">
+            <h2 className="t-display-md">{t.orders.title}</h2>
           </div>
           <OrderStatusLookup copy={t.orders} locale={locale} />
-        </section>
+        </div>
+      </section>
 
-        <footer className="footer">
-          {t.footer}
-          <span className="footer-links">
-            <Link href={`/${locale}/faq` as Route}>{t.nav.faq}</Link>
-            <Link href={`/${locale}/terms` as Route}>{t.nav.terms}</Link>
-            <Link href={`/${locale}/privacy` as Route}>{t.nav.privacy}</Link>
-            <Link href={`/${locale}/cookies` as Route}>{t.nav.cookies}</Link>
-            <Link href={`/${locale}/upload-policy` as Route}>{t.nav.uploadPolicy}</Link>
-            <Link href={`/${locale}/returns` as Route}>{t.nav.returns}</Link>
-          </span>
-        </footer>
-      </div>
+      <SiteFooter locale={locale} />
     </main>
   );
 }

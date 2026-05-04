@@ -263,6 +263,118 @@ img { max-width: 100%; }
 }
 .tile-inner--wide { max-width: 1440px; }
 
+/* Tile heading block */
+.tile-head {
+  display: grid;
+  gap: 16px;
+  margin-bottom: var(--space-xxl);
+  max-width: 720px;
+}
+.tile-head--center {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.tile-head p {
+  color: var(--ink-muted-80);
+  margin: 0;
+}
+.tile--dark .tile-head p,
+.tile--dark-2 .tile-head p,
+.tile--dark-3 .tile-head p { color: var(--on-dark-muted); }
+
+/* Hero layout (Apple) */
+.hero-grid {
+  align-items: center;
+  display: grid;
+  gap: 56px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(360px, 1fr);
+}
+
+.hero-eyebrow {
+  color: var(--accent);
+  font-family: var(--font-text);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.016em;
+  margin: 0 0 18px;
+}
+
+.hero-subtitle {
+  color: var(--ink-muted-80);
+  margin: 24px 0 0;
+  max-width: 640px;
+}
+
+.hero-figure {
+  margin: 0;
+  position: relative;
+}
+.hero-figure img {
+  border-radius: var(--r-lg);
+  display: block;
+  filter: drop-shadow(0 3px 30px rgba(0, 0, 0, 0.22));
+  height: auto;
+  width: 100%;
+}
+
+.hero-figure .hero-facts {
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+}
+
+@media (max-width: 833px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 32px; }
+  .tile-head { margin-bottom: 32px; }
+}
+
+/* Material-Apple grid (auto-fit, utility cards) */
+.material-grid--apple {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.material-grid--apple .utility-card h3 {
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.24;
+  margin: 0 0 8px;
+}
+.material-grid--apple .utility-card p {
+  color: var(--ink-muted-80);
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 0 0 8px;
+}
+.material-grid--apple .utility-card .stock {
+  color: var(--ink-muted-48);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  margin-top: 12px;
+}
+
+/* Local production / behind-the-print dark tile */
+.banner-dark {
+  text-align: center;
+}
+.banner-dark .t-display-lg {
+  margin-bottom: 18px;
+}
+.banner-dark p {
+  color: var(--on-dark-muted);
+  margin: 0 auto;
+  max-width: 640px;
+}
+.banner-dark .actions {
+  justify-content: center;
+  margin-top: 32px;
+}
+
 @media (max-width: 833px) {
   .tile { padding: 56px 20px; }
 }
